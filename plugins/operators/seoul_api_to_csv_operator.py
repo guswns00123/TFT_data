@@ -8,7 +8,7 @@ class SeoulApiToCsvOperator(BaseOperator):
 
     def __init__(self, dataset_nm, path, file_name, base_dt=None, **kwargs):
         super().__init__(**kwargs)
-        self.http_conn_id = 'kr.api.riotgames.com'
+
         self.path = path
         self.file_name = file_name
         self.request_header  = {
@@ -19,12 +19,11 @@ class SeoulApiToCsvOperator(BaseOperator):
             "X-Riot-Token": '{{var.value.apikey_tft}}'
         }
         self.base_dt = base_dt
-        self.endpoint = dataset_nm
     def execute(self, context):
         import os
 
-        connection = BaseHook.get_connection(self.http_conn_id)
-        self.base_url = f'http://{connection.host}/tft/{self.endpoint}'
+        self.base_url = f'https://kr.api.riotgames.com/tft/'
+
         tier_list = ["challenger"]
         user_data = None
         for i in tier_list:
