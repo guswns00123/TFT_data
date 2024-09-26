@@ -23,6 +23,7 @@ class TFTApiToCsvOperator2(BaseOperator):
         final_file = 'sky_puuid.csv'
         user_data = pd.read_csv( self.path+'/' + self.file_name)
         self.log.info(f'시작2:{self.a}')
+        high_df = None
         for index, row in user_data.iterrows():
             id = row['summonerId']
             if high_df is None:
