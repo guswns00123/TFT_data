@@ -1,14 +1,12 @@
 from airflow.models.baseoperator import BaseOperator
-from airflow.hooks.base import BaseHook
 import pandas as pd 
 import time
 import requests
 class SeoulApiToCsvOperator(BaseOperator):
-    template_fields = ('endpoint', 'path','file_name','base_dt')
+    template_fields = ('path','file_name','base_dt')
 
     def __init__(self, dataset_nm, path, file_name, base_dt=None, **kwargs):
         super().__init__(**kwargs)
-
         self.path = path
         self.file_name = file_name
         self.request_header  = {
