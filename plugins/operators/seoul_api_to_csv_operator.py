@@ -19,13 +19,12 @@ class SeoulApiToCsvOperator(BaseOperator):
             "X-Riot-Token": '{{var.value.apikey_tft}}'
         }
         self.base_dt = base_dt
-
+        self.endpoint = dataset_nm
     def execute(self, context):
         import os
 
         connection = BaseHook.get_connection(self.http_conn_id)
-        self.base_url = f'http://{connection.host}/tft'
-
+        self.base_url = f'http://{connection.host}/tft/{self.endpoint}'
         tier_list = ["challenger", "grandmaster"]
         user_data = None
         for i in tier_list:
