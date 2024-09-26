@@ -25,7 +25,7 @@ class SeoulApiToCsvOperator(BaseOperator):
 
         connection = BaseHook.get_connection(self.http_conn_id)
         self.base_url = f'http://{connection.host}/tft/{self.endpoint}'
-        tier_list = ["challenger", "grandmaster"]
+        tier_list = ["challenger"]
         user_data = None
         for i in tier_list:
             users = self.extract_sky(i,self.base_url)
@@ -41,7 +41,7 @@ class SeoulApiToCsvOperator(BaseOperator):
 
     def extract_sky(self, tier, base_url):
 
-        if tier not in ['grandmaster']:
+        if tier not in ["challenger", "grandmaster"]:
 
             print('해당 함수에서는 master, grandmaster, challenger만 기술할 수 있습니다.')
 
