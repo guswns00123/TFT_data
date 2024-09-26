@@ -5,13 +5,14 @@ import requests
 from airflow.models import Variable
 
 class TFTApiToCsvOperator(BaseOperator):
-    template_fields = ('path','file_name','base_dt')
+    template_fields = ('key','path','file_name','base_dt')
 
     def __init__(self, key, path, file_name, base_dt=None, **kwargs):
         super().__init__(**kwargs)
+        self.var_value = key
         self.path = path
         self.file_name = file_name
-        self.var_value = key
+        
         self.base_dt = base_dt
 
     def execute(self, context):
