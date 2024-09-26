@@ -24,7 +24,7 @@ class TFTApiToCsvOperator2(BaseOperator):
         user_data = pd.read_csv( self.path+'/' + self.file_name)
         self.log.info(f'시작2:{self.a}')
         for index, row in user_data.iterrows():
-            id = row['entries']['summonerId']
+            id = row['summonerId']
             if high_df is None:
                 high_df = pd.DataFrame(self.extract_game_by_summoner(id,self.base_url))
             else:

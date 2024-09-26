@@ -29,6 +29,8 @@ class TFTApiToCsvOperator(BaseOperator):
             else:
                 user_data2 = pd.DataFrame(users)
                 user_data = pd.concat([user_data, user_data2])
+
+        user_data['summonerId'] = user_data['entries'].apply(self.extract_summoner_id)
         if not os.path.exists(self.path):
             self.log.info(f'여기3')
             os.system(f'mkdir -p {self.path}')
@@ -58,7 +60,16 @@ class TFTApiToCsvOperator(BaseOperator):
         account_id = requests.get(f"{base_url}{code_name}", headers=request_header).json()
         
         return account_id
-    
+    def extract_summoner_id(entries_dict):
+        try:
+            # entries_dict가 이미 딕셔너리 형태라고 가정
+            return entries_dict['summonerId']
+        except KeyError as e:
+            print(f"KeyError: {e} - Entry: {entries_dict}")
+            return None  # 오류가 발생하면 None 반환
+
+        # entries 칼럼이 이미 딕셔너리 형태라면
+        
     def extract_game_by_summoner(self, idname, base_url):
         request_header  = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
