@@ -31,17 +31,17 @@ class TFTApiToCsvOperator(BaseOperator):
                 user_data = pd.concat([user_data, user_data2])
         #2
         #id를 이용하여 puuid 가져와 high_df에 적재
-        high_df = None
-        for index, row in user_data.iterrows():
-            id = row['entries']['summonerId']
-            if high_df is None:
-                high_df = pd.DataFrame(self.extract_game_by_summoner(id, self.base_url))
-            else:
-                high_df2 = pd.DataFrame(self.extract_game_by_summoner(id, self.base_url))
-                high_df = pd.concat([high_df, high_df2])
+        # high_df = None
+        # for index, row in user_data.iterrows():
+        #     id = row['entries']['summonerId']
+        #     if high_df is None:
+        #         high_df = pd.DataFrame(self.extract_game_by_summoner(id, self.base_url))
+        #     else:
+        #         high_df2 = pd.DataFrame(self.extract_game_by_summoner(id, self.base_url))
+        #         high_df = pd.concat([high_df, high_df2])
         if not os.path.exists(self.path):
             os.system(f'mkdir -p {self.path}')
-        high_df.to_csv(self.path + '/' + self.file_name, encoding='utf-8', index=False)
+        user_data.to_csv(self.path + '/' + self.file_name, encoding='utf-8', index=False)
 
     def extract_sky(self, tier, base_url):
 
