@@ -41,7 +41,9 @@ class TFTApiToCsvOperator(BaseOperator):
         #         high_df2 = pd.DataFrame(self.extract_game_by_summoner(id, self.base_url))
         #         high_df = pd.concat([high_df, high_df2])
         if not os.path.exists(self.path):
+            self.log.info(f'여기3')
             os.system(f'mkdir -p {self.path}')
+            self.log.info(f'여기4')
         user_data.to_csv(self.path + '/' + self.file_name, encoding='utf-8', index=False)
 
     def extract_sky(self, tier, base_url):
