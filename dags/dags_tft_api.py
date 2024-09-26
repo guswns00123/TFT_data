@@ -1,6 +1,7 @@
 from operators.TFT_api_to_csv_operator import TFTApiToCsvOperator
 from airflow import DAG
 import pendulum
+from airflow.models import Variable
 
 with DAG(
     dag_id='dags_tft_api',
@@ -9,9 +10,10 @@ with DAG(
     catchup=False
 ) as dag:
     '''천상계 선수 데이터'''
+    var_value = Variable.get("apikey_tft")
     test = TFTApiToCsvOperator(
         task_id='test',
-        dataset_nm='league/v1/',
+        dataset_nm=var_value,
         path='/opt/airflow/files/test/{{data_interval_end.in_timezone("Asia/Seoul") | ds_nodash }}',
         file_name='sky_user_list.csv'
     )
