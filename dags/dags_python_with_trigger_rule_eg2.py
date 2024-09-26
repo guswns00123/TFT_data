@@ -31,7 +31,7 @@ with DAG(
 
     @task(task_id='task_b')
     def task_b():
-        print('정상 처리')
+        print('정상 처리123')
 
 
     @task(task_id='task_c')
