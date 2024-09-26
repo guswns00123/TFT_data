@@ -26,6 +26,7 @@ class TFTApiToCsvOperator(BaseOperator):
             users = self.extract_sky(i,self.base_url)
             if user_data is None:
                 user_data = pd.DataFrame(users)
+                self.log.info(f'중간:{user_data}')
             else:
                 user_data2 = pd.DataFrame(users)
                 user_data = pd.concat([user_data, user_data2])
