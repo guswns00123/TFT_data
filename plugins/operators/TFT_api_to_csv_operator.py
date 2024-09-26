@@ -9,7 +9,7 @@ class TFTApiToCsvOperator(BaseOperator):
 
     def __init__(self, key, path, file_name, base_dt=None, **kwargs):
         super().__init__(**kwargs)
-        self.var_value = key
+        self.key = key
         self.path = path
         self.file_name = file_name
         
@@ -55,7 +55,7 @@ class TFTApiToCsvOperator(BaseOperator):
             "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
             "Accept-Charset": "application/x-www-form-urlencoded; charset=UTF-8",
             "Origin": "https://developer.riotgames.com",
-            "X-Riot-Token": self.var_value
+            "X-Riot-Token": self.key
         }
         code_name = f"league/v1/{tier}"
         account_id = requests.get(f"{base_url}{code_name}", headers=request_header).json()
@@ -68,7 +68,7 @@ class TFTApiToCsvOperator(BaseOperator):
             "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
             "Accept-Charset": "application/x-www-form-urlencoded; charset=UTF-8",
             "Origin": "https://developer.riotgames.com",
-            "X-Riot-Token": self.var_value
+            "X-Riot-Token": self.key
         }
         id_code_name = base_url + "league/v1/entries/by-summoner/" + idname
         user_id = requests.get(id_code_name, headers = request_header).json()
