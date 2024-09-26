@@ -13,7 +13,7 @@ with DAG(
     var_value = Variable.get("apikey_tft")
     test = TFTApiToCsvOperator(
         task_id='test',
-        dataset_nm=var_value,
+        key=var_value,
         path='/opt/airflow/files/test/{{data_interval_end.in_timezone("Asia/Seoul") | ds_nodash }}',
         file_name='sky_user_list.csv'
     )
