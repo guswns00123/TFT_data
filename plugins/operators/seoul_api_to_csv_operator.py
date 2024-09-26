@@ -12,12 +12,12 @@ class SeoulApiToCsvOperator(BaseOperator):
         self.path = path
         self.file_name = file_name
         self.request_header  = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
-    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Accept-Charset": "application/x-www-form-urlencoded; charset=UTF-8",
-    "Origin": "https://developer.riotgames.com",
-    "X-Riot-Token": "RGAPI-229eaa01-32e0-4eed-87cd-aafef19ea481"
-}
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+            "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Accept-Charset": "application/x-www-form-urlencoded; charset=UTF-8",
+            "Origin": "https://developer.riotgames.com",
+            "X-Riot-Token": '{{var.value.apikey_tft}}'
+        }
         self.base_dt = base_dt
 
     def execute(self, context):
@@ -49,7 +49,7 @@ class SeoulApiToCsvOperator(BaseOperator):
             return None
 
         code_name = f"league/v1/{tier}"
-        response = requests.get(f"{self.base_url}{code_name}", headers=self.request_header).json()
+        response = requests.get(f"{base_url}{code_name}", headers=self.request_header).json()
         if response.status_code == 200:
             account_id = response
         else:
