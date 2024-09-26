@@ -19,7 +19,7 @@ class TFTApiToCsvOperator(BaseOperator):
         import os
 
         self.base_url = f'https://kr.api.riotgames.com/tft/'
-
+        self.log.info(f'시작:{self.key}')
         tier_list = ["challenger"]
         user_data = None
         for i in tier_list:
