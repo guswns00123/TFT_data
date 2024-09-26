@@ -5,11 +5,11 @@ import requests
 from airflow.models import Variable
 
 class TFTApiToCsvOperator(BaseOperator):
-    template_fields = ('key','path','file_name','base_dt')
+    template_fields = ('test','path','file_name','base_dt')
 
-    def __init__(self, key, path, file_name, base_dt=None, **kwargs):
+    def __init__(self, test, path, file_name, base_dt=None, **kwargs):
         super().__init__(**kwargs)
-        self.key = key
+        self.test = test
         self.path = path
         self.file_name = file_name
         
@@ -19,7 +19,7 @@ class TFTApiToCsvOperator(BaseOperator):
         import os
 
         self.base_url = f'https://kr.api.riotgames.com/tft/'
-        self.log.info(f'시작:{self.key}')
+        self.log.info(f'시작:{self.test}')
         tier_list = ["challenger"]
         user_data = None
         for i in tier_list:
@@ -55,7 +55,7 @@ class TFTApiToCsvOperator(BaseOperator):
             "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
             "Accept-Charset": "application/x-www-form-urlencoded; charset=UTF-8",
             "Origin": "https://developer.riotgames.com",
-            "X-Riot-Token": self.key
+            "X-Riot-Token": self.tesst
         }
         code_name = f"league/v1/{tier}"
         account_id = requests.get(f"{base_url}{code_name}", headers=request_header).json()
@@ -68,7 +68,7 @@ class TFTApiToCsvOperator(BaseOperator):
             "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
             "Accept-Charset": "application/x-www-form-urlencoded; charset=UTF-8",
             "Origin": "https://developer.riotgames.com",
-            "X-Riot-Token": self.key
+            "X-Riot-Token": self.test
         }
         id_code_name = base_url + "league/v1/entries/by-summoner/" + idname
         user_id = requests.get(id_code_name, headers = request_header).json()
