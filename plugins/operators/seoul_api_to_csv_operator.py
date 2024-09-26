@@ -45,9 +45,6 @@ class SeoulApiToCsvOperator(BaseOperator):
             return None
 
         code_name = f"league/v1/{tier}"
-        response = requests.get(f"{base_url}{code_name}", headers=self.request_header).json()
-        if response.status_code == 200:
-            account_id = response
-        else:
-            print(f"Error fetching data: {response.status_code}")
+        account_id = requests.get(f"{base_url}{code_name}", headers=self.request_header).json()
+        
         return account_id
