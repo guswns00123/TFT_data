@@ -28,8 +28,10 @@ class TFTApiToCsvOperator2(BaseOperator):
             id = row['summonerId']
             if high_df is None:
                 high_df = pd.DataFrame(self.extract_game_by_summoner(id,self.base_url))
+                self.log.info(f'시작3:{id}')
             else:
                 high_df2 = pd.DataFrame(self.extract_game_by_summoner(id,self.base_url))
+                self.log.info(f'시작4:{id}')
                 high_df = pd.concat([high_df, high_df2])
 
         if not os.path.exists(self.path):
