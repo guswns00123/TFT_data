@@ -53,5 +53,5 @@ class TFTApiToCsvOperator2(BaseOperator):
         }
         id_code_name = base_url + "league/v1/entries/by-summoner/" + idname
         user_id = requests.get(id_code_name, headers = request_header).json()
-        time.sleep(2)
+        time.sleep(4)
         return user_id
