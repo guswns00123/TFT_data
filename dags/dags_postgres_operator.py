@@ -2,7 +2,7 @@ from airflow import DAG
 import pendulum
 from airflow.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 with DAG(
         dag_id='dags_postgres_operator',
@@ -37,6 +37,20 @@ with DAG(
         }
     )
  
+    def upload_to_s3(filename, key, bucket_name):
+        hook = S3Hook('aws_default')
+        hook.load_file(filename=filename,
+                       key = key,
+                       bucket_name=bucket_name,
+                       replace=True)
     
+    upload_s3 = PythonOperator(
+        task_id = 'upload_s3',
+        python_callable=upload_to_s3,
+        op_kwargs={
+            'filename' : '/opt/airflow/files/tft_user_info2.csv',
+            'key' : 'files/tft_user_info2.csv',
+            'bucket_name' : 'morzibucket'
+        })
 
     process_user
