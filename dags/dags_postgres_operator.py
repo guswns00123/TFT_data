@@ -2,7 +2,7 @@ from airflow import DAG
 import pendulum
 from airflow.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from operators.hooks import PostgresToS3Operator
+
 
 with DAG(
         dag_id='dags_postgres_operator',
