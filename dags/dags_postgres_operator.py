@@ -2,7 +2,7 @@ from airflow import DAG
 import pendulum
 from airflow.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-
+from hooks.custom_postgres_hook import CustomPostgresHook
 
 with DAG(
         dag_id='dags_postgres_operator',
@@ -11,20 +11,17 @@ with DAG(
         catchup=False
 ) as dag:
     
-    # def post_to_S3(postgres_conn_id, query, s3_conn_id, s3_bucket, s3_key, **kwargs):
-    #     custom_hook = PostgresToS3Operator(postgres_conn_id=postgres_conn_id, 
-    #                                        query=f"SELECT * FROM {pg_schema}.{table_name}",
-    #                                        s3_conn_id=s3_conn_id,
-    #                                        s3_bucket=s3_bucket,
-    #                                        s3_key=f"{s3_path}/{table_name}.csv")
-    #     custom_hook.execute()
-    # export_task = PythonOperator(
-    #         task_id='post_S3',
-    #         python_callable=post_to_S3,
-    #         op_kwargs={'postgres_conn_id': 'conn-db-postgres-custom',
-    #                 'tbl_nm':'TFT_user_info',
-    #                 'file_nm':'/opt/airflow/files/user_info.csv'}
-    #         )
+    # def insrt_postgres(postgres_conn_id, tbl_nm, file_nm, **kwargs):
+    #     custom_postgres_hook = CustomPostgresHook(postgres_conn_id=postgres_conn_id)
+    #     custom_postgres_hook.
+
+    # insrt_postgres = PythonOperator(
+    #     task_id='insrt_postgres',
+    #     python_callable=insrt_postgres,
+    #     op_kwargs={'postgres_conn_id': 'conn-db-postgres-custom',
+    #                'tbl_nm':'TFT_user_info',
+    #                'file_nm':'/opt/airflow/files/user_info.csv'}
+    # )
 
     def process_user_data(ti):
     # 이전 task의 XCom에서 데이터를 가져옴
