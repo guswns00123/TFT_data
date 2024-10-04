@@ -1,28 +1,41 @@
+import boto3
 from airflow import DAG
-from airflow.providers.amazon.aws.operators.lambda_function import AWSLambdaInvokeFunctionOperator
+from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
+from airflow.hooks.base_hook import BaseHook
+# Lambda 호출 함수 정의
+def trigger_lambda(**kwargs):
+    # boto3 클라이언트를 이용한 Lambda 호출
+    session = boto3.Session(
+        aws_access_key_id=BaseHook.get_connection('aws_lambda').login,
+        aws_secret_access_key=BaseHook.get_connection('aws_lambda').password,
+        region_name='ap-northeast-2'
+    )
+    
+    client = session.client('lambda')
+    response = client.invoke(
+        FunctionName='TFT_data_S3',
+        InvocationType='RequestResponse',  # 'Event'는 비동기 호출
+        Payload=b'{"key1": "value1"}'
+    )
+    print(response)
 
-# DAG 기본 설정
+# Airflow DAG 설정
 default_args = {
     'owner': 'airflow',
     'start_date': days_ago(1),
 }
 
-# DAG 정의
 with DAG(
     dag_id='dag_lambda_trigger',
     default_args=default_args,
-    schedule_interval=None,  # 스케줄링 필요에 따라 변경
+    schedule_interval=None,
     catchup=False
 ) as dag:
 
-    # Lambda 함수를 호출하는 작업 정의
-    invoke_lambda = AWSLambdaInvokeFunctionOperator(
-        task_id='invoke_lambda_function',
-        function_name='TFT_data_S3',  # 호출할 Lambda 함수 이름
-        aws_conn_id='aws_lambda',                  # 앞서 설정한 AWS 연결 ID
-        payload='{"key1": "value1", "key2": "value2"}',  # Lambda 함수에 전달할 JSON payload (선택 사항)
-        log_type='Tail',                            # 로그 유형 (선택 사항)
+    # Lambda 호출 작업 정의
+    trigger_lambda_task = PythonOperator(
+        task_id='trigger_lambda',
+        python_callable=trigger_lambda,
+        provide_context=True,
     )
-
-    invoke_lambda
