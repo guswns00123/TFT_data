@@ -20,12 +20,7 @@ def trigger_lambda(**kwargs):
         InvocationType='RequestResponse',  # 'Event'는 비동기 호출
         Payload=b'{}'
     )
-    status_code = response['StatusCode']
     
-    if status_code == 200:
-        return {'status': 'success', 'status_code': status_code}
-    else:
-        return {'status': 'failure', 'status_code': status_code}
 
 def check_lambda_status(**kwargs):
     # XCom에서 Lambda 호출 결과 가져오기
@@ -74,4 +69,4 @@ with DAG(
     )
 
     # Task 순서 정의
-    trigger_lambda_task >> check_lambda_task
+    trigger_lambda_task
