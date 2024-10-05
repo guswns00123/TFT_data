@@ -4,13 +4,20 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.operators.email import EmailOperator
+from airflow.operators.empty import EmptyOperator
+
 with DAG(
-        dag_id='dags_postgres_operator',
-        start_date=pendulum.datetime(2023, 4, 1, tz='Asia/Seoul'),
-        schedule='0 7 * * *',
+        dag_id='dags_postgres_to_S3',
+        start_date=pendulum.datetime(2024, 10, 1, tz='Asia/Seoul'),
+        schedule=None,
         catchup=False
 ) as dag:
-    
+    '''Postgres DB 정보를 Airflow를 통하여 S3에 적재'''
+    start = EmptyOperator(
+    task_id='start'
+    )
+
     def process_user_data(postgres_conn_id, query, file_path, **kwargs):
 
         postgres_hook = PostgresHook(postgres_conn_id=postgres_conn_id)
@@ -52,5 +59,12 @@ with DAG(
             'key' : 'files/tft_user_info2.csv',
             'bucket_name' : 'morzibucket'
         })
-
-    process_user
+    
+    
+    send_email_task = EmailOperator(
+        task_id='send_email_task',
+        to='fresh0911@naver.com',
+        subject='S3 적재 성공',
+        html_content='S3 적재 성공하였습니다.'
+    )
+    process_user >> upload_s3 >> send_email_task
