@@ -5,6 +5,7 @@ from airflow.hooks.base_hook import BaseHook
 import pendulum
 from airflow.exceptions import AirflowFailException
 import datetime
+import json
 
 def trigger_lambda(**kwargs):
     # boto3 클라이언트를 이용한 Lambda 호출
@@ -13,13 +14,21 @@ def trigger_lambda(**kwargs):
         aws_secret_access_key=BaseHook.get_connection('aws_lambda').password,
         region_name='ap-northeast-2'
     )
-    
+    payload = {
+        "key1": "value1",
+        "key2": "value2"
+    }
+
     client = session.client('lambda')
     response = client.invoke(
         FunctionName='TFT_data_S3',
-        InvocationType='RequestResponse',  # 'Event'는 비동기 호출
-        Payload=b'{}'
+        InvocationType='RequestResponse',  # 동기 호출
+        Payload=json.dumps(payload).encode('utf-8')  # 페이로드 직렬화 후 전달
     )
+
+    status_code = response['StatusCode']
+    if status_code != 200:
+        raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
     kwargs['ti'].xcom_push(key='lambda_response', value=response)
     
 
@@ -64,7 +73,7 @@ with DAG(
         provide_context=True,
         retries=3,  # 3번 재시도 후 실패하면 넘어가게 설정
         retry_delay=datetime.timedelta(minutes=2),  # 재시도 간격 설정
-        execution_timeout=datetime.timedelta(minutes=10),  # 실행 제한 시간 설정
+        execution_timeout=datetime.timedelta(minutes=5),  # 실행 제한 시간 설정
         trigger_rule='all_done'  # 실패해도 다음 태스크로 넘어가게 설정
     )
     check_lambda_task = PythonOperator(
