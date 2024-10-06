@@ -4,7 +4,7 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.hooks.base_hook import BaseHook
 import pendulum
 from airflow.exceptions import AirflowFailException
-import timedelta
+import datetime
 
 def trigger_lambda(**kwargs):
     # boto3 클라이언트를 이용한 Lambda 호출
@@ -63,8 +63,8 @@ with DAG(
         python_callable=trigger_lambda,
         provide_context=True,
         retries=3,  # 3번 재시도 후 실패하면 넘어가게 설정
-        retry_delay=timedelta(minutes=2),  # 재시도 간격 설정
-        execution_timeout=timedelta(minutes=10),  # 실행 제한 시간 설정
+        retry_delay=datetime.timedelta(minutes=2),  # 재시도 간격 설정
+        execution_timeout=datetime.timedelta(minutes=10),  # 실행 제한 시간 설정
         trigger_rule='all_done'  # 실패해도 다음 태스크로 넘어가게 설정
     )
     check_lambda_task = PythonOperator(
