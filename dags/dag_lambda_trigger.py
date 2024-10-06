@@ -70,10 +70,6 @@ with DAG(
         task_id='trigger_lambda',
         python_callable=trigger_lambda,
         provide_context=True,
-        retries=3,  # 3번 재시도 후 실패하면 넘어가게 설정
-        retry_delay=datetime.timedelta(minutes=2),  # 재시도 간격 설정
-        execution_timeout=datetime.timedelta(minutes=5),  # 실행 제한 시간 설정
-        trigger_rule='all_done'  # 실패해도 다음 태스크로 넘어가게 설정
     )
     check_lambda_task = PythonOperator(
         task_id='check_lambda_status',
