@@ -86,4 +86,4 @@ with DAG(
     )
 
     # Task 순서 정의
-    trigger_lambda_task >>check_lambda_task
+    trigger_lambda_task 
