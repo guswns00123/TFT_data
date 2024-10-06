@@ -19,19 +19,24 @@ def trigger_lambda(**kwargs):
         "key2": "value2"
     }
 
+    payload = {
+        "key1": "value1",
+        "key2": "value2"
+    }
+
     client = session.client('lambda')
     response = client.invoke(
         FunctionName='TFT_data_S3',
-        InvocationType='RequestResponse',  # 동기 호출
+        InvocationType='Event',  # 비동기 호출로 변경
         Payload=json.dumps(payload).encode('utf-8')  # 페이로드 직렬화 후 전달
     )
-
+    
+    # Lambda 함수 실행을 트리거하고 즉시 반환
     status_code = response['StatusCode']
-    if status_code != 200:
+    if status_code != 202:  # 비동기 호출의 성공 응답은 202 (Accepted)
         raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
     
-    # XCom에 응답 저장
-    kwargs['ti'].xcom_push(key='lambda_response', value=response)
+    print("Lambda function triggered asynchronously.")
     
 
 def check_lambda_status(**kwargs):
