@@ -21,13 +21,16 @@ def trigger_lambda(**kwargs):
 
     client = session.client('lambda')
     response = client.invoke(
-    FunctionName='TFT_data_S3',
-    InvocationType='Event',  # 비동기 호출로 전환
-    Payload=b'{}'
-)
+        FunctionName='TFT_data_S3',
+        InvocationType='RequestResponse',  # 동기 호출
+        Payload=json.dumps(payload).encode('utf-8')  # 페이로드 직렬화 후 전달
+    )
 
     status_code = response['StatusCode']
+    if status_code != 200:
+        raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
     
+    # XCom에 응답 저장
     kwargs['ti'].xcom_push(key='lambda_response', value=response)
     
 
