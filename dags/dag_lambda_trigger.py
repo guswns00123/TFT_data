@@ -29,7 +29,7 @@ def trigger_lambda(file_name,**kwargs):
     
     # Lambda 함수 실행 결과 가져오기
     response_payload = response['Payload'].read().decode('utf-8')
-    status_code = response['StatusCode']
+    status_code = response['statusCode']
 
     if status_code == 200:  # 동기 호출의 성공 응답은 200
         print(f"Lambda function executed successfully for file: {file_name}")
@@ -78,9 +78,7 @@ with DAG(
         j = 0
         for i in file_names:
             trigger_lambda(i)
-            j+=1
-            if j ==1:
-                break
+
 
     
 
