@@ -59,8 +59,7 @@ with DAG(
     def create_lambda_tasks_from_list(**kwargs):
         ti = kwargs['ti']
         file_names = ti.xcom_pull(task_ids='list_files')
-        print(file_names)
-        print(file_names[0])
+        trigger_lambda(file_names[0])
 
     # Dynamic task creation
     create_lambda_tasks_op = PythonOperator(
