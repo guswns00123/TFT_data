@@ -23,16 +23,32 @@ def trigger_lambda(file_name,**kwargs):
     client = session.client('lambda')
     response = client.invoke(
         FunctionName='TFT_data_S3',
-        InvocationType='Event',
+        InvocationType='RequestResponse',  # 동기 호출로 변경
         Payload=json.dumps(payload).encode('utf-8')
     )
     
-    # Lambda 함수 실행을 트리거하고 즉시 반환
+    # Lambda 함수 실행 결과 가져오기
+    response_payload = response['Payload'].read().decode('utf-8')
     status_code = response['StatusCode']
-    if status_code != 202:  # 비동기 호출의 성공 응답은 202 (Accepted)
+
+    if status_code == 200:  # 동기 호출의 성공 응답은 200
+        print(f"Lambda function executed successfully for file: {file_name}")
+        print(f"Response: {response_payload}")
+    else:
         raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
     
-    print(f"Lambda function triggered for file: {file_name} asynchronously.")
+    # response = client.invoke(
+    #     FunctionName='TFT_data_S3',
+    #     InvocationType='Event',
+    #     Payload=json.dumps(payload).encode('utf-8')
+    # )
+    
+    # # Lambda 함수 실행을 트리거하고 즉시 반환
+    # status_code = response['StatusCode']
+    # if status_code != 202:  # 비동기 호출의 성공 응답은 202 (Accepted)
+    #     raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
+    
+    # print(f"Lambda function triggered for file: {file_name} asynchronously.")
     
 
 with DAG(
@@ -63,7 +79,7 @@ with DAG(
         for i in file_names:
             trigger_lambda(i)
             j+=1
-            if j ==4:
+            if j ==1:
                 break
 
     
