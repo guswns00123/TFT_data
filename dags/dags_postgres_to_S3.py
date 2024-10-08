@@ -74,4 +74,4 @@ with DAG(
         subject='S3 적재 성공',
         html_content='S3 적재 성공하였습니다.'
     )
-    process_user >> save_batches >> send_email_task
+    start >> process_user >> save_batches >> send_email_task
