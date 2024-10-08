@@ -6,6 +6,7 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.operators.email import EmailOperator
 from airflow.operators.empty import EmptyOperator
+import pandas as pd
 
 with DAG(
         dag_id='dags_postgres_to_S3',
@@ -29,11 +30,9 @@ with DAG(
         result = cursor.fetchall()
         
         # 데이터를 CSV로 저장
-        with open(file_path, "w") as f:
-            for row in result:
-                f.write(",".join([str(item) for item in row]) + "\n")
+        df = pd.DataFrame(result)
         
-        print(f"Data saved to: {file_path}")
+        return df
 
     process_user = PythonOperator(
         task_id="process_user_data",
@@ -41,26 +40,33 @@ with DAG(
         op_kwargs={
             'postgres_conn_id': 'conn-db-postgres-custom',
             'query': 'SELECT * FROM tft_user_info',  # 실행할 쿼리
-            'file_path': '/opt/airflow/files/challenger_user_info.csv'  # 파일 저장 경로
-        }
+        },
+        provide_context=True
     )
  
-    def upload_to_s3(filename, key, bucket_name):
+    def upload_to_s3(user_data_batch, batch_number):
+        file_path = f'/opt/airflow/files/challenger_user_info_batch_{batch_number}.csv'
+        user_data_batch.to_csv(file_path, index=False, header=False)
         hook = S3Hook('aws_default')
-        hook.load_file(filename=filename,
-                       key = key,
-                       bucket_name=bucket_name,
+        hook.load_file(filename=file_path,
+                       key=f'files/challenger_user_info_batch_{batch_number}.csv',
+                       bucket_name='morzibucket',
                        replace=True)
-    
-    upload_s3 = PythonOperator(
-        task_id = 'upload_s3',
-        python_callable=upload_to_s3,
-        op_kwargs={
-            'filename' : '/opt/airflow/files/challenger_user_info.csv',
-            'key' : 'files/challenger_user_info.csv',
-            'bucket_name' : 'morzibucket'
-        })
-    
+        print(f"Uploaded batch {batch_number} to S3.")
+
+    def save_batches_to_s3(**kwargs):
+        user_data = kwargs['ti'].xcom_pull(task_ids='process_user_data')
+        batch_size = 50
+        
+        for i in range(0, len(user_data), batch_size):
+            user_batch = user_data.iloc[i:i + batch_size]  # 50명씩 배치
+            upload_to_s3(user_batch, i // batch_size + 1)  # 배치 번호는 1부터 시작
+
+    save_batches = PythonOperator(
+        task_id='save_batches_to_s3',
+        python_callable=save_batches_to_s3,
+        provide_context=True
+    )
     
     send_email_task = EmailOperator(
         task_id='send_email_task',
@@ -68,4 +74,4 @@ with DAG(
         subject='S3 적재 성공',
         html_content='S3 적재 성공하였습니다.'
     )
-    process_user >> upload_s3 >> send_email_task
+    process_user >> save_batches >> send_email_task
