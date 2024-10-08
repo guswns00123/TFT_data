@@ -59,11 +59,11 @@ with DAG(
     def create_lambda_tasks_from_list(**kwargs):
         ti = kwargs['ti']
         file_names = ti.xcom_pull(task_ids='list_files')
-        i = 0
+        j = 0
         for i in file_names:
             trigger_lambda(i)
-            i+=1
-            if i ==4:
+            j+=1
+            if j ==4:
                 break
 
     
