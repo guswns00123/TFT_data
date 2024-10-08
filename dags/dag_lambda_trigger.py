@@ -34,7 +34,7 @@ def trigger_lambda(file_name,**kwargs):
     
     print(f"Lambda function triggered for file: {file_name} asynchronously.")
     
-def create_lambda_tasks(file_names):
+def create_lambda_tasks(file_names, dag):
     tasks = []
     for file_name in file_names:
         task = PythonOperator(
