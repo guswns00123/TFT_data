@@ -34,18 +34,6 @@ def trigger_lambda(file_name,**kwargs):
     
     print(f"Lambda function triggered for file: {file_name} asynchronously.")
     
-def create_lambda_tasks(file_names):
-    tasks = []
-    for file_name in file_names:
-        task = PythonOperator(
-            task_id=f'trigger_lambda_{os.path.basename(file_name)}',
-            python_callable=trigger_lambda,
-            op_kwargs={'file_name': file_name},
-            provide_context=True,
-        )
-        tasks.append(task)
-    return tasks
-
 
 with DAG(
     dag_id='dag_lambda_trigger',
@@ -71,13 +59,8 @@ with DAG(
     def create_lambda_tasks_from_list(**kwargs):
         ti = kwargs['ti']
         file_names = ti.xcom_pull(task_ids='list_files')
-        lambda_tasks = create_lambda_tasks(file_names)
-        
-        # 각 Lambda 작업을 DAG에 추가
-        for task in lambda_tasks:
-            task.set_upstream(create_lambda_tasks_op)  # 의존성을 설정
-    
-        return lambda_tasks
+        print(file_names)
+        print(file_names[0])
 
     # Dynamic task creation
     create_lambda_tasks_op = PythonOperator(
