@@ -30,6 +30,8 @@ def trigger_lambda(file_name,**kwargs):
     status_code = response['StatusCode']
     if status_code != 202:  # 비동기 호출의 성공 응답은 202 (Accepted)
         raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
+    
+    print(f"Lambda function triggered for file: {file_name} asynchronously.")
     # client = session.client('lambda')
     # response = client.invoke(
     #     FunctionName='TFT_data_S3',
@@ -91,13 +93,10 @@ with DAG(
     def create_lambda_tasks_from_list(**kwargs):
         ti = kwargs['ti']
         file_names = ti.xcom_pull(task_ids='list_files')
-        response_list = []
 
         for file_name in file_names:
             trigger_lambda(file_name)  # 각 파일에 대해 Lambda 호출
             
-
-        return response_list  # 모든 응답을 반환
 
     create_lambda_tasks_op = PythonOperator(
         task_id='create_lambda_tasks',
