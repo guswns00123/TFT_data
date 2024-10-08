@@ -19,7 +19,7 @@ with DAG(
     task_id='start'
     )
 
-    def process_user_data(postgres_conn_id, query, file_path, **kwargs):
+    def process_user_data(postgres_conn_id, query, **kwargs):
 
         postgres_hook = PostgresHook(postgres_conn_id=postgres_conn_id)
         
