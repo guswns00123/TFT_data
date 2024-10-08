@@ -38,26 +38,26 @@ def trigger_lambda(file_name,**kwargs):
         raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
     print(f"Lambda function triggered for file: {response} asynchronously.")
 
-def trigger_lambda2(file_name,**kwargs):
-    session = boto3.Session(
-        aws_access_key_id=BaseHook.get_connection('aws_lambda').login,
-        aws_secret_access_key=BaseHook.get_connection('aws_lambda').password,
-        region_name='ap-northeast-2'
-    )
+# def trigger_lambda2(file_name,**kwargs):
+#     session = boto3.Session(
+#         aws_access_key_id=BaseHook.get_connection('aws_lambda').login,
+#         aws_secret_access_key=BaseHook.get_connection('aws_lambda').password,
+#         region_name='ap-northeast-2'
+#     )
 
-    client = session.client('lambda')
-    response = client.invoke(
-        FunctionName='get_game_result',
-        InvocationType='Event',
-        Payload=json.dumps(response).encode('utf-8')
-    )
+#     client = session.client('lambda')
+#     response = client.invoke(
+#         FunctionName='get_game_result',
+#         InvocationType='Event',
+#         Payload=json.dumps(response).encode('utf-8')
+#     )
     
-    # Lambda 함수 실행을 트리거하고 즉시 반환
-    status_code = response['StatusCode']
-    if status_code != 202:  # 비동기 호출의 성공 응답은 202 (Accepted)
-        raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
+#     # Lambda 함수 실행을 트리거하고 즉시 반환
+#     status_code = response['StatusCode']
+#     if status_code != 202:  # 비동기 호출의 성공 응답은 202 (Accepted)
+#         raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
     
-    print(f"Lambda function triggered for file: {file_name} asynchronously.")
+#     print(f"Lambda function triggered for file: {file_name} asynchronously.")
 with DAG(
     dag_id='dag_lambda_trigger',
     start_date=pendulum.datetime(2024,10,1, tz='Asia/Seoul'), 
@@ -86,6 +86,7 @@ with DAG(
         for file_name in file_names:
             response = trigger_lambda(file_name)  # 각 파일에 대해 Lambda 호출
             response_list.append(response)  # 응답을 리스트에 저장
+            break
 
         return response_list  # 모든 응답을 반환
 
@@ -95,12 +96,12 @@ with DAG(
         provide_context=True,
     )
 
-    # 두 번째 Lambda 호출 작업
-    second_lambda_task = PythonOperator(
-        task_id='trigger_second_lambda',
-        python_callable=trigger_lambda2,
-        op_kwargs={'response': '{{ task_instance.xcom_pull(task_ids="create_lambda_tasks") }}'},  # 첫 번째 Lambda의 응답을 사용
-        provide_context=True,
-    )
+    # # 두 번째 Lambda 호출 작업
+    # second_lambda_task = PythonOperator(
+    #     task_id='trigger_second_lambda',
+    #     python_callable=trigger_lambda2,
+    #     op_kwargs={'response': '{{ task_instance.xcom_pull(task_ids="create_lambda_tasks") }}'},  # 첫 번째 Lambda의 응답을 사용
+    #     provide_context=True,
+    # )
 
-    list_files_task >> create_lambda_tasks_op >> second_lambda_task
+    list_files_task >> create_lambda_tasks_op 
