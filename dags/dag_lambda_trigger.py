@@ -37,34 +37,19 @@ def trigger_lambda(file_name,**kwargs):
     else:
         raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
     print(f"Lambda function triggered for file: {response} asynchronously.")
-    # response = client.invoke(
-    #     FunctionName='TFT_data_S3',
-    #     InvocationType='Event',
-    #     Payload=json.dumps(payload).encode('utf-8')
-    # )
-    
-    # # Lambda 함수 실행을 트리거하고 즉시 반환
-    # status_code = response['StatusCode']
-    # if status_code != 202:  # 비동기 호출의 성공 응답은 202 (Accepted)
-    #     raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
-    
-    # print(f"Lambda function triggered for file: {file_name} asynchronously.")
-    
+
 def trigger_lambda2(file_name,**kwargs):
     session = boto3.Session(
         aws_access_key_id=BaseHook.get_connection('aws_lambda').login,
         aws_secret_access_key=BaseHook.get_connection('aws_lambda').password,
         region_name='ap-northeast-2'
     )
-    payload = {
-        "file_name": file_name  # 파일 이름을 페이로드로 전달
-    }
 
     client = session.client('lambda')
     response = client.invoke(
-        FunctionName='TFT_data_S3',
+        FunctionName='get_game_result',
         InvocationType='Event',
-        Payload=json.dumps(payload).encode('utf-8')
+        Payload=json.dumps(response).encode('utf-8')
     )
     
     # Lambda 함수 실행을 트리거하고 즉시 반환
@@ -93,22 +78,29 @@ with DAG(
         },
         provide_context=True,
     )
-    tasks = []
     def create_lambda_tasks_from_list(**kwargs):
         ti = kwargs['ti']
         file_names = ti.xcom_pull(task_ids='list_files')
-        j = 0
-        for i in file_names:
-            trigger_lambda(i)
+        response_list = []
 
+        for file_name in file_names:
+            response = trigger_lambda(file_name)  # 각 파일에 대해 Lambda 호출
+            response_list.append(response)  # 응답을 리스트에 저장
 
-    
+        return response_list  # 모든 응답을 반환
 
-    # Dynamic task creation
     create_lambda_tasks_op = PythonOperator(
         task_id='create_lambda_tasks',
         python_callable=create_lambda_tasks_from_list,
         provide_context=True,
     )
 
-    list_files_task >> create_lambda_tasks_op
+    # 두 번째 Lambda 호출 작업
+    second_lambda_task = PythonOperator(
+        task_id='trigger_second_lambda',
+        python_callable=trigger_lambda2,
+        op_kwargs={'response': '{{ task_instance.xcom_pull(task_ids="create_lambda_tasks") }}'},  # 첫 번째 Lambda의 응답을 사용
+        provide_context=True,
+    )
+
+    list_files_task >> create_lambda_tasks_op >> second_lambda_task
