@@ -21,7 +21,7 @@ def trigger_lambda(file_name,**kwargs):
     }
     client = session.client('lambda')
     response = client.invoke(
-        FunctionName='get_game_result',
+        FunctionName='TFT_data_S3',
         InvocationType='Event',
         Payload=json.dumps(payload).encode('utf-8')
     )
