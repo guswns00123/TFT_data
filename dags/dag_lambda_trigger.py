@@ -60,13 +60,7 @@ with DAG(
         ti = kwargs['ti']
         file_names = ti.xcom_pull(task_ids='list_files')
         for i in file_names:
-            task = PythonOperator(
-                    task_id = "tft_{}".format(i),
-                    dag=dag,
-                    callable=trigger_lambda(i),
-                )
-            
-            tasks.append(task)
+            trigger_lambda(i)
 
     
 
