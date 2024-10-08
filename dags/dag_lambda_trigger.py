@@ -55,11 +55,20 @@ with DAG(
         },
         provide_context=True,
     )
-
+    tasks = []
     def create_lambda_tasks_from_list(**kwargs):
         ti = kwargs['ti']
         file_names = ti.xcom_pull(task_ids='list_files')
-        trigger_lambda(file_names[0])
+        for i in file_names:
+            task = PythonOperator(
+                    task_id = "tft_{}".format(i),
+                    dag=dag,
+                    callable=trigger_lambda(i),
+                )
+            
+            tasks.append(task)
+
+    
 
     # Dynamic task creation
     create_lambda_tasks_op = PythonOperator(
