@@ -96,12 +96,6 @@ with DAG(
         provide_context=True,
     )
 
-    # # 두 번째 Lambda 호출 작업
-    # second_lambda_task = PythonOperator(
-    #     task_id='trigger_second_lambda',
-    #     python_callable=trigger_lambda2,
-    #     op_kwargs={'response': '{{ task_instance.xcom_pull(task_ids="create_lambda_tasks") }}'},  # 첫 번째 Lambda의 응답을 사용
-    #     provide_context=True,
-    # )
+
 
     list_files_task >> create_lambda_tasks_op 
