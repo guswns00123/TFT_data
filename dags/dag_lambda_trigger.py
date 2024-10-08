@@ -84,9 +84,8 @@ with DAG(
         response_list = []
 
         for file_name in file_names:
-            response = trigger_lambda(file_name)  # 각 파일에 대해 Lambda 호출
-            response_list.append(response)  # 응답을 리스트에 저장
-            break
+            trigger_lambda(file_name)  # 각 파일에 대해 Lambda 호출
+            
 
         return response_list  # 모든 응답을 반환
 
