@@ -50,7 +50,29 @@ def trigger_lambda(file_name,**kwargs):
     
     # print(f"Lambda function triggered for file: {file_name} asynchronously.")
     
+def trigger_lambda2(file_name,**kwargs):
+    session = boto3.Session(
+        aws_access_key_id=BaseHook.get_connection('aws_lambda').login,
+        aws_secret_access_key=BaseHook.get_connection('aws_lambda').password,
+        region_name='ap-northeast-2'
+    )
+    payload = {
+        "file_name": file_name  # 파일 이름을 페이로드로 전달
+    }
 
+    client = session.client('lambda')
+    response = client.invoke(
+        FunctionName='TFT_data_S3',
+        InvocationType='Event',
+        Payload=json.dumps(payload).encode('utf-8')
+    )
+    
+    # Lambda 함수 실행을 트리거하고 즉시 반환
+    status_code = response['StatusCode']
+    if status_code != 202:  # 비동기 호출의 성공 응답은 202 (Accepted)
+        raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
+    
+    print(f"Lambda function triggered for file: {file_name} asynchronously.")
 with DAG(
     dag_id='dag_lambda_trigger',
     start_date=pendulum.datetime(2024,10,1, tz='Asia/Seoul'), 
