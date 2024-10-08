@@ -34,13 +34,14 @@ with DAG(
                 f.write(",".join([str(item) for item in row]) + "\n")
         
         print(f"Data saved to: {file_path}")
+
     process_user = PythonOperator(
         task_id="process_user_data",
         python_callable=process_user_data,
         op_kwargs={
             'postgres_conn_id': 'conn-db-postgres-custom',
             'query': 'SELECT * FROM tft_user_info',  # 실행할 쿼리
-            'file_path': '/opt/airflow/files/tft_user_info2.csv'  # 파일 저장 경로
+            'file_path': '/opt/airflow/files/challenger_user_info.csv'  # 파일 저장 경로
         }
     )
  
@@ -55,8 +56,8 @@ with DAG(
         task_id = 'upload_s3',
         python_callable=upload_to_s3,
         op_kwargs={
-            'filename' : '/opt/airflow/files/tft_user_info2.csv',
-            'key' : 'files/tft_user_info2.csv',
+            'filename' : '/opt/airflow/files/challenger_user_info.csv',
+            'key' : 'files/challenger_user_info.csv',
             'bucket_name' : 'morzibucket'
         })
     

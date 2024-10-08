@@ -28,7 +28,7 @@ with DAG(
         python_callable=insrt_postgres,
         op_kwargs={'postgres_conn_id': 'conn-db-postgres-custom',
                    'tbl_nm':'tft_user_info',
-                   'file_nm':'/opt/airflow/files/user_info.csv'}
+                   'file_nm':'/opt/airflow/files/challenger_user_data.csv'}
     )
 
     send_email_task = EmailOperator(
