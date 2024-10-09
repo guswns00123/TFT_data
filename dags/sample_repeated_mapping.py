@@ -11,12 +11,12 @@ with DAG(dag_id="sample_repeated_mapping",
         ) as dag:
 
     @task
-    def add(x: int, y: int):
-        return x + y
+    def add(x: int):
+        return x 
 
     @task
     def print_x(x: list):
         logging.info(x)
 
-    added_values = add.expand(x=[2, 4, 8], y=[5, 10])
+    added_values = add.expand(x=[2, 4, 8])
     print_x(added_values)
