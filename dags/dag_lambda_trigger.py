@@ -8,6 +8,8 @@ import datetime
 import json
 import os
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.decorators import task
+import logging
 
 def trigger_lambda(file_name,**kwargs):
     # boto3 클라이언트를 이용한 Lambda 호출
@@ -90,13 +92,23 @@ with DAG(
         },
         provide_context=True,
     )
+    @task
+    def add(x: str):
+        return x 
+    @task
+    def print_x(x: list):
+        logging.info(x)
+
+    added_values = add.expand(x=[2, 4, 8])
+    
     def create_lambda_tasks_from_list(**kwargs):
         ti = kwargs['ti']
         file_names = ti.xcom_pull(task_ids='list_files')
-
-        for file_name in file_names:
-            trigger_lambda(file_name) 
-            break # 각 파일에 대해 Lambda 호출
+        added_values = add.expand(x=file_names)
+        print_x(added_values)
+        # for file_name in file_names:
+        #     trigger_lambda(file_name) 
+        #     break # 각 파일에 대해 Lambda 호출
             
 
     create_lambda_tasks_op = PythonOperator(
@@ -107,4 +119,4 @@ with DAG(
 
 
 
-    list_files_task >> create_lambda_tasks_op 
+    list_files_task >>  print_x(added_values) >> create_lambda_tasks_op 
