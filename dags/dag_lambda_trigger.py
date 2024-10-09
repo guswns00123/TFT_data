@@ -96,10 +96,12 @@ with DAG(
     def create_lambda_tasks_from_list(**kwargs):
         ti = kwargs['ti']
         file_names = ti.xcom_pull(task_ids='list_files')
-
+        i = 0
         for file_name in file_names:
             trigger_lambda(file_name) 
-            break # 각 파일에 대해 Lambda 호출
+            i+=1
+            if i ==10:
+                break # 각 파일에 대해 Lambda 호출
             
 
     create_lambda_tasks_op = PythonOperator(
