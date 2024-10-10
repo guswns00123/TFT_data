@@ -31,6 +31,8 @@ class CustomPostgresHook(BaseHook):
         if table_name =='tft_game_res' and 'participants' in file_df.columns:
             def fix_json_format(participant_str):
                 participant_str = participant_str.replace("'", '"')
+                participant_str = re.sub(r'(\w+):', r'"\1":', participant_str)  # 키에 큰따옴표 추가
+                participant_str = participant_str.replace('"{', '{').replace('}"', '}')  # 이중 큰따옴표 제거
                 return participant_str
 
             file_df['participants'] = file_df['participants'].apply(fix_json_format)   
