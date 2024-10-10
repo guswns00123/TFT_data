@@ -56,7 +56,7 @@ with DAG(
 
     def save_batches_to_s3(**kwargs):
         user_data = kwargs['ti'].xcom_pull(task_ids='process_user_data')
-        batch_size = 80
+        batch_size = 50
         
         for i in range(0, len(user_data), batch_size):
             user_batch = user_data.iloc[i:i + batch_size]  # 50명씩 배치
