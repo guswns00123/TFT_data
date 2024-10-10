@@ -43,5 +43,15 @@ with DAG(
     },
     provide_context=True,
 )
+    download_file_task2 = PythonOperator(
+    task_id='download_file2',
+    python_callable=download_file_from_s3,
+    op_kwargs={
+        'bucket_name': 'morzibucket',
+        'file_name': 'game_id/challenger_game_res_1.csv',
+        'local_path': '/opt/airflow/files/game_res'  # Local path to save the file
+    },
+    provide_context=True,
+)
 
-download_file_task
+download_file_task >> download_file_task2
