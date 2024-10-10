@@ -4,8 +4,8 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.hooks.S3_hook import S3Hook
 import pendulum
+from io import StringIO
 
-# Function to download a file from S3
 def download_file_from_s3(bucket_name, file_name, local_path, **kwargs):
     s3_hook = S3Hook('aws_default')
     s3_client = s3_hook.get_conn()
@@ -15,7 +15,7 @@ def download_file_from_s3(bucket_name, file_name, local_path, **kwargs):
     content = obj['Body'].read().decode('utf-8')
 
     # Convert the file content to a DataFrame (assuming it's a CSV file)
-    df = pd.read_csv(pd.compat.StringIO(content))
+    df = pd.read_csv(StringIO(content))
     
     # Save to local directory
     local_file_path = f"{local_path}/{file_name.split('/')[-1]}"
