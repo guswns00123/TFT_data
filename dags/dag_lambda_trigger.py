@@ -19,38 +19,38 @@ def trigger_lambda(file_name,**kwargs):
     payload = {
         "file_name": file_name  # 파일 이름을 페이로드로 전달
     }
-    # client = session.client('lambda')
-    # response = client.invoke(
-    #     FunctionName='TFT_data_S3',
-    #     InvocationType='Event',
-    #     Payload=json.dumps(payload).encode('utf-8')
-    # )
-    
-    # # Lambda 함수 실행을 트리거하고 즉시 반환
-    # status_code = response['StatusCode']
-    # if status_code != 202:  # 비동기 호출의 성공 응답은 202 (Accepted)
-    #     raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
-    
-    # print(f"Lambda function triggered for file: {file_name} asynchronously.")
     client = session.client('lambda')
     response = client.invoke(
         FunctionName='TFT_data_S3',
-        InvocationType='RequestResponse',  # 동기 호출로 변경
+        InvocationType='Event',
         Payload=json.dumps(payload).encode('utf-8')
     )
     
-    # Lambda 함수 실행 결과 가져오기
-    response_payload = response['Payload'].read().decode('utf-8')
+    # Lambda 함수 실행을 트리거하고 즉시 반환
     status_code = response['StatusCode']
-
-    # Lambda 응답을 JSON으로 변환
-    if status_code == 200:
-        response_data = json.loads(response_payload)  # JSON 변환
-        print(f"Lambda function executed successfully for file: {file_name}")
-        print(f"Response: {response_data}")
-        return response_data  # 응답 데이터 반환
-    else:
+    if status_code != 202:  # 비동기 호출의 성공 응답은 202 (Accepted)
         raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
+    
+    print(f"Lambda function triggered for file: {file_name} asynchronously.")
+    # client = session.client('lambda')
+    # response = client.invoke(
+    #     FunctionName='TFT_data_S3',
+    #     InvocationType='RequestResponse',  # 동기 호출로 변경
+    #     Payload=json.dumps(payload).encode('utf-8')
+    # )
+    
+    # # Lambda 함수 실행 결과 가져오기
+    # response_payload = response['Payload'].read().decode('utf-8')
+    # status_code = response['StatusCode']
+
+    # # Lambda 응답을 JSON으로 변환
+    # if status_code == 200:
+    #     response_data = json.loads(response_payload)  # JSON 변환
+    #     print(f"Lambda function executed successfully for file: {file_name}")
+    #     print(f"Response: {response_data}")
+    #     return response_data  # 응답 데이터 반환
+    # else:
+    #     raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
 
 # def trigger_lambda2(file_name,**kwargs):
 #     session = boto3.Session(
@@ -100,7 +100,7 @@ with DAG(
         for file_name in file_names:
             trigger_lambda(file_name) 
             i+=1
-            if i ==10:
+            if i ==3:
                 break # 각 파일에 대해 Lambda 호출
             
 
