@@ -33,34 +33,38 @@ class CustomPostgresHook(BaseHook):
         # Function to flatten participant dictionary
             def flatten_participant(participant):
                 flat_dict = {}
-                flat_dict['augments'] = ', '.join(participant.get('augments', []))  # augments를 하나의 문자열로 결합
-                flat_dict['gold_left'] = participant.get('gold_left', 0)
-                flat_dict['last_round'] = participant.get('last_round', 0)
-                flat_dict['level'] = participant.get('level', 0)
-                flat_dict['placement'] = participant.get('placement', 0)
-                flat_dict['players_eliminated'] = participant.get('players_eliminated', 0)
-                flat_dict['puuid'] = participant.get('puuid', '')
-                flat_dict['total_damage_to_players'] = participant.get('total_damage_to_players', 0)
+                flat_dict['augments'] = ', '.join(participant['augments'])  # Join augments into a single string
+                flat_dict['gold_left'] = participant['gold_left']
+                flat_dict['last_round'] = participant['last_round']
+                flat_dict['level'] = participant['level']
+                flat_dict['placement'] = participant['placement']
+                flat_dict['players_eliminated'] = participant['players_eliminated']
+                flat_dict['puuid'] = participant['puuid']
+                flat_dict['total_damage_to_players'] = participant['total_damage_to_players']
                 
-                # companion 데이터 추출
-                companion = participant.get('companion', {})
-                flat_dict['companion_species'] = companion.get('species', '')
-                flat_dict['companion_item_ID'] = companion.get('item_ID', 0)
+                # Extract companion data
+                companion = participant['companion']
+                flat_dict['companion_species'] = companion['species']
+                flat_dict['companion_item_ID'] = companion['item_ID']
                 
-                # traits와 units 추출
-                flat_dict['traits'] = ', '.join([trait['name'] for trait in participant.get('traits', [])])
-                flat_dict['units'] = ', '.join([unit['character_id'] for unit in participant.get('units', [])])
+                # Extract traits and units if needed (example shows flattening 'name')
+                flat_dict['traits'] = ', '.join([trait['name'] for trait in participant['traits']])
+                flat_dict['units'] = ', '.join([unit['character_id'] for unit in participant['units']])
                 
                 return flat_dict
             def parse_json(x):
-                try:
-                    return json.loads(x) if isinstance(x, str) else x
-                except json.JSONDecodeError as e:
-                    self.log.error(f"JSON 파싱 오류 발생: {x}, 오류: {e}")
-                    return {}  # 오류 발생 시 빈 딕셔너리 반환
+                if isinstance(x, str):
+                    try:
+                        # JSON 문자열을 파싱하여 딕셔너리로 변환
+                        return json.loads(x)
+                    except json.JSONDecodeError as e:
+                        print(f"JSON 파싱 오류: {x}, 오류: {e}")
+                        return {}  # 오류 발생 시 빈 딕셔너리 반환
+                return x  # 문자열이 아닌 경우 그대로 반환
 
-        # JSON 파싱 후 처리
+        # participants 열에 대해 parse_json 함수를 적용
             file_df['participants'] = file_df['participants'].apply(parse_json)
+            self.log.info(file_df['participants'])
             # Apply the flattening function to the 'participants' column
             flattened_data = file_df['participants'].apply(flatten_participant)
             
