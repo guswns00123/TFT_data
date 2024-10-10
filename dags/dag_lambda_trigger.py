@@ -99,9 +99,7 @@ with DAG(
         i = 0
         for file_name in file_names:
             trigger_lambda(file_name) 
-            i+=1
-            if i ==2:
-                break # 각 파일에 대해 Lambda 호출
+            break
             
 
     create_lambda_tasks_op = PythonOperator(
