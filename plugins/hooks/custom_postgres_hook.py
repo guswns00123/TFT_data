@@ -28,6 +28,7 @@ class CustomPostgresHook(BaseHook):
         header = 0 if is_header else None                       # is_header = True면 0, False면 None
         if_exists = 'replace' if is_replace else 'append'       # is_replace = True면 replace, False면 append
         file_df = pd.read_csv(file_name, header=header, delimiter=delimiter)
+        new_df = file_df.copy()
         if table_name =='tft_game_res' and 'participants' in file_df.columns:
         
         # Function to flatten participant dictionary
@@ -53,21 +54,10 @@ class CustomPostgresHook(BaseHook):
                 flat_dict['units'] = ', '.join([unit['character_id'] for unit in participant['units']])
                 
                 return flat_dict
-            def parse_json(x):
-                if isinstance(x, str):
-                    try:
-                        # JSON 문자열을 파싱하여 딕셔너리로 변환
-                        return json.loads(x)
-                    except json.JSONDecodeError as e:
-                        print(f"JSON 파싱 오류: {x}, 오류: {e}")
-                        return {}  # 오류 발생 시 빈 딕셔너리 반환
-                return x  # 문자열이 아닌 경우 그대로 반환
-
-        # participants 열에 대해 parse_json 함수를 적용
-            file_df['participants'] = file_df['participants'].apply(parse_json)
+        
             self.log.info(file_df['participants'])
             # Apply the flattening function to the 'participants' column
-            flattened_data = file_df['participants'].apply(flatten_participant)
+            flattened_data = new_df['participants'].apply(flatten_participant)
             
             # Convert the result to a DataFrame and concatenate with the original, dropping 'participants' column
             flattened_df = pd.DataFrame(flattened_data.tolist())
