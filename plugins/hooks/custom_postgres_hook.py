@@ -1,6 +1,7 @@
 from airflow.hooks.base import BaseHook
 import psycopg2
 import pandas as pd
+import json
 
 class CustomPostgresHook(BaseHook):
 
@@ -52,6 +53,7 @@ class CustomPostgresHook(BaseHook):
                 
                 return flat_dict
             
+            file_df['participants'] = file_df['participants'].apply(lambda x: json.loads(x) if isinstance(x, str) else x)
             # Apply the flattening function to the 'participants' column
             flattened_data = file_df['participants'].apply(flatten_participant)
             
