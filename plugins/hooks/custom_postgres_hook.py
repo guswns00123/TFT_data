@@ -32,6 +32,7 @@ class CustomPostgresHook(BaseHook):
         
         # Function to flatten participant dictionary
             def flatten_participant(participant):
+                self.log.info(participant)
                 flat_dict = {}
                 flat_dict['augments'] = ', '.join(participant['augments'])  # Join augments into a single string
                 flat_dict['gold_left'] = participant['gold_left']
