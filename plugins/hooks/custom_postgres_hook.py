@@ -27,7 +27,38 @@ class CustomPostgresHook(BaseHook):
         header = 0 if is_header else None                       # is_header = True면 0, False면 None
         if_exists = 'replace' if is_replace else 'append'       # is_replace = True면 replace, False면 append
         file_df = pd.read_csv(file_name, header=header, delimiter=delimiter)
-
+        if 'participants' in file_df.columns:
+        
+        # Function to flatten participant dictionary
+            def flatten_participant(participant):
+                flat_dict = {}
+                flat_dict['augments'] = ', '.join(participant['augments'])  # Join augments into a single string
+                flat_dict['gold_left'] = participant['gold_left']
+                flat_dict['last_round'] = participant['last_round']
+                flat_dict['level'] = participant['level']
+                flat_dict['placement'] = participant['placement']
+                flat_dict['players_eliminated'] = participant['players_eliminated']
+                flat_dict['puuid'] = participant['puuid']
+                flat_dict['total_damage_to_players'] = participant['total_damage_to_players']
+                
+                # Extract companion data
+                companion = participant['companion']
+                flat_dict['companion_species'] = companion['species']
+                flat_dict['companion_item_ID'] = companion['item_ID']
+                
+                # Extract traits and units
+                flat_dict['traits'] = ', '.join([trait['name'] for trait in participant['traits']])
+                flat_dict['units'] = ', '.join([unit['character_id'] for unit in participant['units']])
+                
+                return flat_dict
+            
+            # Apply the flattening function to the 'participants' column
+            flattened_data = file_df['participants'].apply(flatten_participant)
+            
+            # Convert the result to a DataFrame and concatenate with the original, dropping 'participants' column
+            flattened_df = pd.DataFrame(flattened_data.tolist())
+            file_df = pd.concat([file_df, flattened_df], axis=1).drop(columns=['participants'])
+            
         for col in file_df.columns:                             
             try:
                 # string 문자열이 아닐 경우 continue

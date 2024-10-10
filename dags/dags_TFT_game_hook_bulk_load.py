@@ -22,7 +22,7 @@ with DAG(
         custom_postgres_hook = CustomPostgresHook(postgres_conn_id=postgres_conn_id)
         custom_postgres_hook.bulk_load(table_name=tbl_nm, file_name=file_nm, delimiter=',', is_header=True, is_replace=True)
 
-    
+    #data_version,match_id,participants
     insrt_postgres1 = PythonOperator(
         task_id='insrt_postgres',
         python_callable=insrt_postgres,
@@ -31,4 +31,12 @@ with DAG(
                    'file_nm':'/opt/airflow/files/game_res/challenger_game_res_1.csv'}
     )
 
-    start >> insrt_postgres1
+    
+    insrt_postgres2 = PythonOperator(
+        task_id='insrt_postgres',
+        python_callable=insrt_postgres,
+        op_kwargs={'postgres_conn_id': 'conn-db-postgres-custom',
+                   'tbl_nm':'tft_game_res',
+                   'file_nm':'/opt/airflow/files/game_id/challenger_game_id_1.csv'}
+    )
+    start >> insrt_postgres1 >> insrt_postgres2
