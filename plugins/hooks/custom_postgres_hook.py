@@ -27,7 +27,7 @@ class CustomPostgresHook(BaseHook):
         header = 0 if is_header else None                       # is_header = True면 0, False면 None
         if_exists = 'replace' if is_replace else 'append'       # is_replace = True면 replace, False면 append
         file_df = pd.read_csv(file_name, header=header, delimiter=delimiter)
-        if 'participants' in file_df.columns:
+        if table_name =='tft_game_res' and 'participants' in file_df.columns:
         
         # Function to flatten participant dictionary
             def flatten_participant(participant):
@@ -58,7 +58,7 @@ class CustomPostgresHook(BaseHook):
             # Convert the result to a DataFrame and concatenate with the original, dropping 'participants' column
             flattened_df = pd.DataFrame(flattened_data.tolist())
             file_df = pd.concat([file_df, flattened_df], axis=1).drop(columns=['participants'])
-            
+
         for col in file_df.columns:                             
             try:
                 # string 문자열이 아닐 경우 continue
