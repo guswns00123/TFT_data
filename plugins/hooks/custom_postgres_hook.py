@@ -2,7 +2,7 @@ from airflow.hooks.base import BaseHook
 import psycopg2
 import pandas as pd
 import json
-
+import re
 class CustomPostgresHook(BaseHook):
 
     def __init__(self, postgres_conn_id, **kwargs):
