@@ -38,12 +38,11 @@ class CustomPostgresHook(BaseHook):
             def parse_json(participant_str):
                 return json.loads(participant_str)
 
-
             file_df['participants'] = file_df['participants'].apply(parse_json)
         # Function to flatten participant dictionary
             def flatten_participant(participant):
-                self.log.info(participant)
                 flat_dict = {}
+                self.log.info(participant['augments'])
                 flat_dict['augments'] = ', '.join(participant['augments'])  # Join augments into a single string
                 flat_dict['gold_left'] = participant['gold_left']
                 flat_dict['last_round'] = participant['last_round']
