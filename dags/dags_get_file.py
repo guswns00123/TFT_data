@@ -39,7 +39,7 @@ with DAG(
     op_kwargs={
         'bucket_name': 'morzibucket',
         'file_name': 'game_res/challenger_game_id_1.csv',
-        'local_path': '/opt/airflow/files'  # Local path to save the file
+        'local_path': '/opt/airflow/files/game_id'  # Local path to save the file
     },
     provide_context=True,
 )
