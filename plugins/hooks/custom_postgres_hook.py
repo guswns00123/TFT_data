@@ -29,6 +29,7 @@ class CustomPostgresHook(BaseHook):
         if_exists = 'replace' if is_replace else 'append'       # is_replace = True면 replace, False면 append
         file_df = pd.read_csv(file_name, header=0, delimiter=delimiter)
         if table_name =='tft_game_res' and 'participants' in file_df.columns:
+            self.log.info(file_df['participants'])
             def fix_json_format(participant_str):
                 participant_str = participant_str.replace("'", '"')
                 participant_str = re.sub(r'\bFalse\b', 'false', participant_str)  # False -> false
