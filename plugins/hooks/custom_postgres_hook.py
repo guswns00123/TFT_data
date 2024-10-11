@@ -21,7 +21,7 @@ class CustomPostgresHook(BaseHook):
 
     def bulk_load(self, table_name, file_name, delimiter: str, is_header: bool, is_replace: bool):
         from sqlalchemy import create_engine
-
+        import re
         self.log.info('적재 대상파일:' + file_name)
         self.log.info('테이블 :' + table_name)
         self.get_conn()
@@ -31,8 +31,9 @@ class CustomPostgresHook(BaseHook):
         if table_name =='tft_game_res' and 'participants' in file_df.columns:
             def fix_json_format(participant_str):
                 participant_str = participant_str.replace("'", '"')
-                participant_str = re.sub(r'(\w+):', r'"\1":', participant_str)  # 키에 큰따옴표 추가
-                participant_str = participant_str.replace('"{', '{').replace('}"', '}')  # 이중 큰따옴표 제거
+                participant_str = re.sub(r'\bFalse\b', 'false', participant_str)  # False -> false
+                participant_str = re.sub(r'\bTrue\b', 'true', participant_str)  
+
                 return participant_str
 
             file_df['participants'] = file_df['participants'].apply(fix_json_format)   
