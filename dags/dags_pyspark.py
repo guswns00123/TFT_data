@@ -13,7 +13,7 @@ with DAG(
     # PySpark 작업 실행
     spark_submit = SparkSubmitOperator(
         task_id='submit_pyspark_job',
-        application='/test.py',  # PySpark 스크립트 경로
+        application='/home/hdoop/test.py',  # PySpark 스크립트 경로
         name='pyspark_job',
         conn_id='spark_default',  # Spark 연결 ID (Airflow에 Spark 연결을 설정해야 함)
         jars='/home/hdoop/postgresql-42.6.2.jar',  # 필요한 JAR 파일
