@@ -18,6 +18,10 @@ with DAG(
         conn_id='spark_default',  # Spark 연결 ID (Airflow에 Spark 연결을 설정해야 함)
         jars='/home/hdoop/postgresql-42.6.2.jar',  # 필요한 JAR 파일
         application_args=['arg1', 'arg2'],  # 필요 시 스크립트에 전달할 인자
+        env_vars={
+            'JAVA_HOME': '/usr/lib/jvm/java-11-openjdk-amd64/bin/java'  # JAVA_HOME의 실제 경로로 변경
+             # Python 경로 필요시 설정
+        },
     )
 
     spark_submit
