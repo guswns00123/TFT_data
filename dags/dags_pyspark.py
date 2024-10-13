@@ -14,7 +14,7 @@ with DAG(
     # PySpark 작업 실행
     spark_submit_task = BashOperator(
     task_id='spark_submit_task',
-    bash_command='export JAVA_HOME=/usr && spark-submit --jars /home/hdoop/postgresql-42.6.2.jar /home/hdoop/test.py',
+    bash_command='spark-submit --jars /home/hdoop/postgresql-42.6.2.jar /home/hdoop/test.py',
     dag=dag,
 )
 
