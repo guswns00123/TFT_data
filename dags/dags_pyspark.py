@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from datetime import datetime, timedelta
 import pendulum
+from airflow.operators.bash import BashOperator
 
 with DAG(
     dag_id="dags_pyspark",
@@ -11,17 +12,11 @@ with DAG(
 ) as dag:
 
     # PySpark 작업 실행
-    spark_submit = SparkSubmitOperator(
-        task_id='submit_pyspark_job',
-        application='/home/hdoop/test.py',  # PySpark 스크립트 경로
-        name='pyspark_job',
-        conn_id='spark_default',  # Spark 연결 ID (Airflow에 Spark 연결을 설정해야 함)
-        jars='/home/hdoop/postgresql-42.6.2.jar',  # 필요한 JAR 파일
-        application_args=['arg1', 'arg2'],  # 필요 시 스크립트에 전달할 인자
-        env_vars={
-            'JAVA_HOME': '/usr/lib/jvm/java-11-openjdk-amd64/bin/java'  # JAVA_HOME의 실제 경로로 변경
-             # Python 경로 필요시 설정
-        },
-    )
+    spark_submit_task = BashOperator(
+    task_id='spark_submit_task',
+    bash_command='spark-submit --jars /home/hdoop/postgresql-42.6.2.jar /home/hdoop/test.py',
+    dag=dag,
+)
 
-    spark_submit
+# DAG에 작업 추가
+    spark_submit_task
