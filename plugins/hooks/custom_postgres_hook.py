@@ -105,27 +105,27 @@ class CustomPostgresHook(BaseHook):
             for index, row in file_df.iterrows():
                 # traits 처리
                 traits_list = row['traits'].split(', ')
-                for trait in traits_list:
-                    df1 = df1.append({
-                        'user_game_id': row['puuid'][:5] + '_' + str(row['gameId']),
-                        'trait_id': trait
-                    }, ignore_index=True)
+                df1_new = pd.DataFrame({
+                    'user_game_id': [row['puuid'][:5] + '_' + str(row['gameId'])] * len(traits_list),
+                    'trait_id': traits_list
+                })
+                df1 = pd.concat([df1, df1_new], ignore_index=True)
 
                 # units 처리
                 unit_list = row['units'].split(', ')
-                for unit in unit_list:
-                    df2 = df2.append({
-                        'user_game_id': row['puuid'][:5] + '_' + str(row['gameId']),
-                        'unit_id': unit
-                    }, ignore_index=True)
+                df2_new = pd.DataFrame({
+                    'user_game_id': [row['puuid'][:5] + '_' + str(row['gameId'])] * len(unit_list),
+                    'unit_id': unit_list
+                })
+                df2 = pd.concat([df2, df2_new], ignore_index=True)
 
                 # augments 처리
                 augment_list = row['augments'].split(', ')
-                for augment in augment_list:
-                    df3 = df3.append({
-                        'user_game_id': row['puuid'][:5] + '_' + str(row['gameId']),
-                        'augment_id': augment
-                    }, ignore_index=True)
+                df3_new = pd.DataFrame({
+                    'user_game_id': [row['puuid'][:5] + '_' + str(row['gameId'])] * len(augment_list),
+                    'augment_id': augment_list
+                })
+                df3 = pd.concat([df3, df3_new], ignore_index=True)
 
             del file_df['traits']
             del file_df['units']
