@@ -36,7 +36,7 @@ class CustomPostgresHook(BaseHook):
         if table_name == 'game_info':
             new_tb_name = 'user_game'
             new_df = pd.DataFrame()
-            new_df['user_match_id'] = file_df['participants'] + '_' + file_df['match_id']
+            new_df['user_match_id'] = file_df['participants'].str[:5] + '_' + file_df['match_id']
             new_df['user_id'] = file_df['participants']
             new_df['match_id'] = file_df['match_id'] 
             uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
