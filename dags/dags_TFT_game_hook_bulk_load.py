@@ -39,4 +39,4 @@ with DAG(
                    'file_nm':'/opt/airflow/files/game_id/challenger_game_id_1.csv'}
     )
 
-    start >> insrt_postgres2
+    start >> insrt_postgres1
