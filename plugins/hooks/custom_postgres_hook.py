@@ -43,12 +43,12 @@ class CustomPostgresHook(BaseHook):
             file_df.rename(columns={'puuid':'user_id'}, inplace=True)
             del file_df['ratedTier']
             del file_df['ratedRating']
-            
+
 
         if table_name == 'game_info':
             new_tb_name = 'user_game'
             new_df = pd.DataFrame()
-            new_df['user_match_id'] = file_df['participants'].str[:5] + '_' + file_df['match_id'][3:]
+            new_df['user_game_id'] = file_df['participants'].str[:5] + '_' + file_df['match_id'][3:]
             new_df['user_id'] = file_df['participants']
             new_df['match_id'] = file_df['match_id'] 
             uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
