@@ -20,8 +20,19 @@ class CustomPostgresHook(BaseHook):
         return self.postgres_conn
 
     def bulk_load(self, table_name, file_name, delimiter: str, is_header: bool, is_replace: bool):
-        from sqlalchemy import create_engine
+        from sqlalchemy import create_engine, event
+        from sqlalchemy.engine import Engine
         import re
+
+        @event.listens_for(Engine, "before_cursor_execute")
+        def add_on_conflict(conn, cursor, statement, parameters, context, executemany):
+            # Modify the statement to add ON CONFLICT clause for avoiding duplicates
+            if "INSERT INTO" in statement:
+                statement = statement.replace(
+                    "INSERT INTO",
+                    "INSERT INTO public.table_name ON CONFLICT (your_primary_key) DO NOTHING"
+                )
+            return statement, parameters
         self.log.info('적재 대상파일:' + file_name)
         self.log.info('테이블 :' + table_name)
         self.get_conn()
@@ -32,11 +43,12 @@ class CustomPostgresHook(BaseHook):
             file_df.rename(columns={'puuid':'user_id'}, inplace=True)
             del file_df['ratedTier']
             del file_df['ratedRating']
+            
 
         if table_name == 'game_info':
             new_tb_name = 'user_game'
             new_df = pd.DataFrame()
-            new_df['user_match_id'] = file_df['participants'].str[:5] + '_' + file_df['match_id']
+            new_df['user_match_id'] = file_df['participants'].str[:5] + '_' + file_df['match_id'][3:]
             new_df['user_id'] = file_df['participants']
             new_df['match_id'] = file_df['match_id'] 
             uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
