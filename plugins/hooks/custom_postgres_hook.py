@@ -32,6 +32,23 @@ class CustomPostgresHook(BaseHook):
             file_df.rename(columns={'puuid':'user_id'}, inplace=True)
             del file_df['ratedTier']
             del file_df['ratedRating']
+
+        if table_name == 'game_info':
+            new_tb_name = 'user_game'
+            new_df = pd.DataFrame()
+            new_df['user_match_id'] = file_df['participants'] + '_' + file_df['match_id']
+            new_df['user_id'] = file_df['participants']
+            new_df['match_id'] = file_df['match_id'] 
+            uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
+            engine = create_engine(uri)
+            new_df.to_sql(name=new_tb_name,
+                            con=engine,
+                            schema='public',
+                            if_exists=if_exists,
+                            index=False
+                        )
+            del file_df['participants']
+
         if table_name =='tft_game_res' and 'participants' in file_df.columns:
             self.log.info(file_df['participants'])
             def fix_json_format(participant_str):

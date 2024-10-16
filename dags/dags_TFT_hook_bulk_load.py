@@ -13,7 +13,7 @@ with DAG(
         schedule=None,
         catchup=False
 ) as dag:
-    '''챌린저 유저 정보 데이터를 local Postgres DB에 적재 DAG'''
+    '''유저 정보 데이터를 local Postgres DB에 적재 DAG'''
     start = EmptyOperator(
     task_id='start'
     )
