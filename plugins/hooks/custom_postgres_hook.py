@@ -24,15 +24,7 @@ class CustomPostgresHook(BaseHook):
         from sqlalchemy.engine import Engine
         import re
 
-        @event.listens_for(Engine, "before_cursor_execute")
-        def add_on_conflict(conn, cursor, statement, parameters, context, executemany):
-            # Modify the statement to add ON CONFLICT clause for avoiding duplicates
-            if "INSERT INTO" in statement:
-                statement = statement.replace(
-                    "INSERT INTO",
-                    "INSERT INTO public.table_name ON CONFLICT (your_primary_key) DO NOTHING"
-                )
-            return statement, parameters
+        
         self.log.info('적재 대상파일:' + file_name)
         self.log.info('테이블 :' + table_name)
         self.get_conn()
@@ -178,6 +170,15 @@ class CustomPostgresHook(BaseHook):
         self.log.info('적재 건수:' + str(len(file_df)))
         uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
         engine = create_engine(uri)
+        @event.listens_for(Engine, "before_cursor_execute")
+        def add_on_conflict(conn, cursor, statement, parameters, context, executemany):
+            # Modify the statement to add ON CONFLICT clause for avoiding duplicates
+            if "INSERT INTO" in statement:
+                statement = statement.replace(
+                    "INSERT INTO",
+                    "INSERT INTO public.table_name ON CONFLICT (your_primary_key) DO NOTHING"
+                )
+            return statement, parameters
         file_df.to_sql(name=table_name,
                             con=engine,
                             schema='public',
