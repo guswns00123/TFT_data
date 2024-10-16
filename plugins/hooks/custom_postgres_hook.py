@@ -49,13 +49,12 @@ class CustomPostgresHook(BaseHook):
                         )
             del file_df['participants']
 
-        if table_name =='tft_game_res' and 'participants' in file_df.columns:
-            self.log.info(file_df['participants'])
+        if table_name =='game_result' :
+            
             def fix_json_format(participant_str):
                 participant_str = participant_str.replace("'", '"')
                 participant_str = re.sub(r'\bFalse\b', 'false', participant_str)  # False -> false
                 participant_str = re.sub(r'\bTrue\b', 'true', participant_str)  
-
                 return participant_str
 
             file_df['participants'] = file_df['participants'].apply(fix_json_format)   
@@ -64,7 +63,7 @@ class CustomPostgresHook(BaseHook):
                 return json.loads(participant_str)
 
             file_df['participants'] = file_df['participants'].apply(parse_json)
-        # Function to flatten participant dictionary
+  
             def flatten_participant(participant):
                 flat_dict = {}
                 self.log.info(participant['augments'])
@@ -76,13 +75,9 @@ class CustomPostgresHook(BaseHook):
                 flat_dict['players_eliminated'] = participant['players_eliminated']
                 flat_dict['puuid'] = participant['puuid']
                 flat_dict['total_damage_to_players'] = participant['total_damage_to_players']
-                
-                # Extract companion data
                 companion = participant['companion']
                 flat_dict['companion_species'] = companion['species']
                 flat_dict['companion_item_ID'] = companion['item_ID']
-                
-                # Extract traits and units if needed (example shows flattening 'name')
                 flat_dict['traits'] = ', '.join([trait['name'] for trait in participant['traits']])
                 flat_dict['units'] = ', '.join([unit['character_id'] for unit in participant['units']])
                 
@@ -94,7 +89,56 @@ class CustomPostgresHook(BaseHook):
             # Convert the result to a DataFrame and concatenate with the original, dropping 'participants' column
             flattened_df = pd.DataFrame(flattened_data.tolist())
             file_df = pd.concat([file_df, flattened_df], axis=1).drop(columns=['participants'])
+            file_df.rename(columns={'puuid':'user_id'}, inplace=True)
+            del file_df['queueId']
+            del file_df['queue_id']
+            del file_df['mapId']
+            del file_df['tft_game_type']
+            del file_df['tft_set_core_name']
+            del file_df['tft_set_number']
+            tb1 = 'match_trait'
+            tb2 = 'match_unit'
+            tb3 = 'match_augment'
+            df1 = pd.DataFrame()
+            df2 = pd.DataFrame()
+            df3 = pd.DataFrame()
+            traits_list = file_df['traits'].split(', ')
+            unit_list = file_df['units'].split(', ')
+            augment_list = file_df['augments'].split(', ')
+            for i in traits_list:
+                df1['user_game_id'] = file_df['puuid'].str[:5] + '_' + file_df['gameId']
+                df1['trait_id'] = i
+            for i in unit_list:
+                df2['user_game_id'] = file_df['puuid'].str[:5] + '_' + file_df['gameId']
+                df2['unit_id'] = i
+            for i in augment_list:
+                df3['user_game_id'] = file_df['puuid'].str[:5] + '_' + file_df['gameId']
+                df3['augment_id'] = i
 
+            del file_df['traits']
+            del file_df['units']
+            del file_df['augments']
+            
+            uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
+            engine = create_engine(uri)
+            df1.to_sql(name=tb1,
+                            con=engine,
+                            schema='public',
+                            if_exists=if_exists,
+                            index=False
+                        )
+            df2.to_sql(name=tb2,
+                            con=engine,
+                            schema='public',
+                            if_exists=if_exists,
+                            index=False
+                        )
+            df3.to_sql(name=tb3,
+                            con=engine,
+                            schema='public',
+                            if_exists=if_exists,
+                            index=False
+                        )
 
 
         for col in file_df.columns:                             

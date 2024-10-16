@@ -35,7 +35,7 @@ with DAG(
         task_id='insrt_postgres2',
         python_callable=insrt_postgres,
         op_kwargs={'postgres_conn_id': 'conn-db-postgres-custom',
-                   'tbl_nm':'tft_game_res',
+                   'tbl_nm':'game_result',
                    'file_nm':'/opt/airflow/files/game_id/challenger_game_id_1.csv'}
     )
 
