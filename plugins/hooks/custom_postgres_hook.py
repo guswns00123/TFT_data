@@ -27,7 +27,11 @@ class CustomPostgresHook(BaseHook):
         self.get_conn()
         header = 0 if is_header else None                       # is_header = True면 0, False면 None
         if_exists = 'replace' if is_replace else 'append'       # is_replace = True면 replace, False면 append
-        file_df = pd.read_csv(file_name, header=0, delimiter=delimiter)
+        file_df = pd.read_csv(file_name, header=0, delimiter=delimiter, index_col = None)
+        if table_name == 'user_info':
+            file_df.rename(columns={'puuid':'user_id'}, inplace=True)
+            del file_df['ratedTier']
+            del file_df['ratedRating']
         if table_name =='tft_game_res' and 'participants' in file_df.columns:
             self.log.info(file_df['participants'])
             def fix_json_format(participant_str):
@@ -73,6 +77,8 @@ class CustomPostgresHook(BaseHook):
             # Convert the result to a DataFrame and concatenate with the original, dropping 'participants' column
             flattened_df = pd.DataFrame(flattened_data.tolist())
             file_df = pd.concat([file_df, flattened_df], axis=1).drop(columns=['participants'])
+
+
 
         for col in file_df.columns:                             
             try:
