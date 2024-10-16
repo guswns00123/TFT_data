@@ -102,23 +102,35 @@ class CustomPostgresHook(BaseHook):
             df1 = pd.DataFrame()
             df2 = pd.DataFrame()
             df3 = pd.DataFrame()
-            traits_list = file_df['traits'].split(', ')
-            unit_list = file_df['units'].split(', ')
-            augment_list = file_df['augments'].split(', ')
-            for i in traits_list:
-                df1['user_game_id'] = file_df['puuid'].str[:5] + '_' + file_df['gameId']
-                df1['trait_id'] = i
-            for i in unit_list:
-                df2['user_game_id'] = file_df['puuid'].str[:5] + '_' + file_df['gameId']
-                df2['unit_id'] = i
-            for i in augment_list:
-                df3['user_game_id'] = file_df['puuid'].str[:5] + '_' + file_df['gameId']
-                df3['augment_id'] = i
+            for index, row in file_df.iterrows():
+                # traits 처리
+                traits_list = row['traits'].split(', ')
+                for trait in traits_list:
+                    df1 = df1.append({
+                        'user_game_id': row['puuid'][:5] + '_' + str(row['gameId']),
+                        'trait_id': trait
+                    }, ignore_index=True)
+
+                # units 처리
+                unit_list = row['units'].split(', ')
+                for unit in unit_list:
+                    df2 = df2.append({
+                        'user_game_id': row['puuid'][:5] + '_' + str(row['gameId']),
+                        'unit_id': unit
+                    }, ignore_index=True)
+
+                # augments 처리
+                augment_list = row['augments'].split(', ')
+                for augment in augment_list:
+                    df3 = df3.append({
+                        'user_game_id': row['puuid'][:5] + '_' + str(row['gameId']),
+                        'augment_id': augment
+                    }, ignore_index=True)
 
             del file_df['traits']
             del file_df['units']
             del file_df['augments']
-            
+
             uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
             engine = create_engine(uri)
             df1.to_sql(name=tb1,
