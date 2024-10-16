@@ -130,25 +130,25 @@ class CustomPostgresHook(BaseHook):
             del file_df['traits']
             del file_df['units']
             del file_df['augments']
-
+            file_df['user_game_id'] = file_df['user_id'].str[:5] + '_' + file_df['gameId']
             uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
             engine = create_engine(uri)
             df1.to_sql(name=tb1,
                             con=engine,
                             schema='public',
-                            if_exists=if_exists,
+                            if_exists='append',
                             index=False
                         )
             df2.to_sql(name=tb2,
                             con=engine,
                             schema='public',
-                            if_exists=if_exists,
+                            if_exists='append',
                             index=False
                         )
             df3.to_sql(name=tb3,
                             con=engine,
                             schema='public',
-                            if_exists=if_exists,
+                            if_exists='append',
                             index=False
                         )
 
