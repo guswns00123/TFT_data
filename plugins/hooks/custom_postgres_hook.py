@@ -60,6 +60,7 @@ class CustomPostgresHook(BaseHook):
                             if_exists='append',
                             index=False
                         )
+            new_df.drop_duplicates(subset='user_game_id', inplace=True)
             del file_df['participants']
 
         if table_name =='game_result' :
