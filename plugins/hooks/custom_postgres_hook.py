@@ -116,7 +116,7 @@ class CustomPostgresHook(BaseHook):
                 # traits 처리
                 traits_list = row['traits'].split(', ')
                 df1_new = pd.DataFrame({
-                    'user_game_id': row['user_id'].str[:5] + '_' + row['gameId'].str[3:],
+                    'user_game_id': row['user_id'][:5] + '_' + row['gameId'][3:],
                     'trait_id': traits_list
                 })
                 df1 = pd.concat([df1, df1_new], ignore_index=True)
@@ -124,7 +124,7 @@ class CustomPostgresHook(BaseHook):
                 # units 처리
                 unit_list = row['units'].split(', ')
                 df2_new = pd.DataFrame({
-                    'user_game_id': row['user_id'].str[:5] + '_' + row['gameId'].str[3:],
+                    'user_game_id': row['user_id'][:5] + '_' + row['gameId'][3:],
                     'unit_id': unit_list
                 })
                 df2 = pd.concat([df2, df2_new], ignore_index=True)
@@ -132,7 +132,7 @@ class CustomPostgresHook(BaseHook):
                 # augments 처리
                 augment_list = row['augments'].split(', ')
                 df3_new = pd.DataFrame({
-                    'user_game_id': row['user_id'].str[:5] + '_' + row['gameId'].str[3:],
+                    'user_game_id': row['user_id'][:5] + '_' + row['gameId'][3:],
                     'augment_id': augment_list
                 })
                 df3 = pd.concat([df3, df3_new], ignore_index=True)
