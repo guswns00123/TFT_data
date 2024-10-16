@@ -180,6 +180,6 @@ class CustomPostgresHook(BaseHook):
         file_df.to_sql(name=table_name,
                             con=engine,
                             schema='public',
-                            if_exists=if_exists,
+                            if_exists='append',
                             index=False
                         )
