@@ -45,7 +45,7 @@ with DAG(
         python_callable=process_user_data,
         op_kwargs={
             'postgres_conn_id': 'conn-db-postgres-custom',
-            'query': 'SELECT * FROM tft_user_info', 
+            'query': 'SELECT * FROM user_info', 
         },
         provide_context=True
     )

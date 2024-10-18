@@ -38,6 +38,7 @@ class CustomPostgresHook(BaseHook):
             file_df.rename(columns={'puuid':'user_id'}, inplace=True)
             del file_df['ratedTier']
             del file_df['ratedRating']
+            del file_df['leagueId']
 
 
         if table_name == 'game_info':
