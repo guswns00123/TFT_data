@@ -40,7 +40,7 @@ class CustomPostgresHook(BaseHook):
             del file_df['ratedRating']
             del file_df['leagueId']
             del file_df['queuetype']
-            if_exists = 'replace'
+            
 
 
         if table_name == 'game_info':
