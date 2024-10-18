@@ -39,6 +39,8 @@ class CustomPostgresHook(BaseHook):
             del file_df['ratedTier']
             del file_df['ratedRating']
             del file_df['leagueId']
+            del file_df['queuetype']
+            if_exists = 'replace'
 
 
         if table_name == 'game_info':
@@ -59,7 +61,7 @@ class CustomPostgresHook(BaseHook):
             
             del file_df['participants']
             file_df = file_df.drop_duplicates(subset=['match_id'])
-
+            if_exists = 'append'
         if table_name =='game_result' :
             
             def fix_json_format(participant_str):
@@ -163,16 +165,8 @@ class CustomPostgresHook(BaseHook):
                             if_exists='append',
                             index=False
                         )
+            if_exists = 'append'
 
-
-        for col in file_df.columns:                             
-            try:
-                # string 문자열이 아닐 경우 continue
-                file_df[col] = file_df[col].str.replace('\r\n','')      # 줄넘김 및 ^M 제거
-                self.log.info(f'{table_name}.{col}: 개행문자 제거')
-            except:
-                continue 
-                
         self.log.info('적재 건수:' + str(len(file_df)))
         uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
         engine = create_engine(uri)
@@ -180,6 +174,6 @@ class CustomPostgresHook(BaseHook):
         file_df.to_sql(name=table_name,
                             con=engine,
                             schema='public',
-                            if_exists='append',
+                            if_exists=if_exists,
                             index=False
                         )
