@@ -11,13 +11,13 @@ from hooks.custom_postgres_hook import CustomPostgresHook
 with DAG(
         dag_id='dags_postgres_to_S3_LocalDB',
         start_date=pendulum.datetime(2024, 10, 1, tz='Asia/Seoul'),
-        schedule=None,
+        schedule='0 1 * * *', # 매일 새벽 1시
         catchup=False
 ) as dag:
     start = EmptyOperator(
     task_id='start'
     )
-
+    
     def insrt_postgres(postgres_conn_id, tbl_nm, file_nm, **kwargs):
         custom_postgres_hook = CustomPostgresHook(postgres_conn_id=postgres_conn_id)
         custom_postgres_hook.bulk_load(table_name=tbl_nm, file_name=file_nm, delimiter=',', is_header=True, is_replace=True)

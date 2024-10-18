@@ -53,7 +53,7 @@ def download_file_from_s3(bucket_name, file_name, local_path, **kwargs):
 with DAG(
         dag_id='dags_game_info_to_LocalDB',
         start_date=pendulum.datetime(2024, 10, 1, tz='Asia/Seoul'),
-        schedule=None,
+        schedule='0 */3 * * *',
         catchup=False
 ) as dag:
     start = EmptyOperator(
