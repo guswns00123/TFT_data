@@ -39,7 +39,7 @@ class CustomPostgresHook(BaseHook):
             del file_df['ratedTier']
             del file_df['ratedRating']
             del file_df['leagueId']
-            del file_df['queuetype']
+            
             
 
 
