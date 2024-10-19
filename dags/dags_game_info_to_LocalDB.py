@@ -9,7 +9,7 @@ from airflow.exceptions import AirflowFailException
 from hooks.custom_postgres_hook import CustomPostgresHook
 import boto3
 import json
-import StringIO
+from io import StringIO
 def trigger_lambda(file_name,**kwargs):
     # boto3 클라이언트를 이용한 Lambda 호출
     session = boto3.Session(
