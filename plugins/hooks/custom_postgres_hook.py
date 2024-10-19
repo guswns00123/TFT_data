@@ -47,7 +47,7 @@ class CustomPostgresHook(BaseHook):
             new_tb_name = 'user_game'
             new_df = pd.DataFrame()
             self.log.info(file_df['match_id'][3:])
-            new_df['user_game_id'] = file_df['participants'].str[:5] + '_' + file_df['match_id'].str[3:]
+            new_df['user_game_id'] = file_df['participants'].str[:7] + '_' + file_df['match_id'].str[3:]
             new_df['user_id'] = file_df['participants']
             new_df['match_id'] = file_df['match_id'] 
             uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
@@ -119,7 +119,7 @@ class CustomPostgresHook(BaseHook):
                 # traits 처리
                 traits_list = row['traits'].split(', ')
                 df1_new = pd.DataFrame({
-                    'user_game_id': row['user_id'][:5] + '_' + str(row['gameId']),
+                    'user_game_id': row['user_id'][:7] + '_' + str(row['gameId']),
                     'trait_id': traits_list
                 })
                 df1 = pd.concat([df1, df1_new], ignore_index=True)
@@ -127,7 +127,7 @@ class CustomPostgresHook(BaseHook):
                 # units 처리
                 unit_list = row['units'].split(', ')
                 df2_new = pd.DataFrame({
-                    'user_game_id': row['user_id'][:5] + '_' + str(row['gameId']),
+                    'user_game_id': row['user_id'][:7] + '_' + str(row['gameId']),
                     'unit_id': unit_list
                 })
                 df2 = pd.concat([df2, df2_new], ignore_index=True)
@@ -135,7 +135,7 @@ class CustomPostgresHook(BaseHook):
                 # augments 처리
                 augment_list = row['augments'].split(', ')
                 df3_new = pd.DataFrame({
-                    'user_game_id': row['user_id'][:5] + '_' + str(row['gameId']),
+                    'user_game_id': row['user_id'][:7] + '_' + str(row['gameId']),
                     'augment_id': augment_list
                 })
                 df3 = pd.concat([df3, df3_new], ignore_index=True)
@@ -144,7 +144,7 @@ class CustomPostgresHook(BaseHook):
             del file_df['units']
             del file_df['augments']
             
-            file_df['user_game_id'] = file_df['user_id'].str[:5] + '_' + file_df['gameId'].astype(str)
+            file_df['user_game_id'] = file_df['user_id'].str[:7] + '_' + file_df['gameId'].astype(str)
             uri = f'postgresql://{self.user}:{self.password}@{self.host}/{self.dbname}'
             engine = create_engine(uri)
             df1.to_sql(name=tb1,
