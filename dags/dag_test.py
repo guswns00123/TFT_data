@@ -4,7 +4,8 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.operators.empty import EmptyOperator
 from airflow.exceptions import AirflowFailException
-
+from airflow.utils.task_group import TaskGroup
+from airflow.operators.dummy import DummyOperator
 def trigger_lambda(file_name,**kwargs):
     import json
     import pandas as pd
@@ -66,12 +67,28 @@ with DAG(
     )
 
     # Lambda 호출 태스크 생성 (Dynamic Task Mapping)
-    trigger_lambda_task = PythonOperator.partial(
-        task_id='trigger_lambda',
-        python_callable=trigger_lambda
-    ).expand(
-        op_kwargs={'file_name': "{{ task_instance.xcom_pull(task_ids='list_s3_files') }}"}  # XCom으로 받은 파일 목록 사용
-    )
+    with TaskGroup("trigger_lambda_group") as trigger_lambda_group:
+        # Dynamic Task Mapping을 사용하여 파일 이름별로 태스크 생성
+        trigger_lambda_task = PythonOperator.partial(
+            task_id='trigger_lambda',
+            python_callable=trigger_lambda
+        ).expand(
+            op_kwargs={'file_name': "{{ task_instance.xcom_pull(task_ids='list_s3_files') }}"}  # XCom으로 받은 파일 목록 사용
+        )
+
+    # 태스크 그룹을 3개씩 제한하는 로직
+    # 3개씩 실행하도록 조정
+    total_files = "{{ task_instance.xcom_pull(task_ids='list_s3_files') | length }}"
+    for i in range(0, 6, 3):  # 파일의 총 개수에 따라 반복
+        # 파일 목록을 3개씩 잘라서 Lambda 호출
+        current_files = f"{{{{ task_instance.xcom_pull(task_ids='list_s3_files')[{i}:{i+3}] }}}}"  # 슬라이싱
+
+        trigger_lambda_partial = PythonOperator.partial(
+            task_id=f'trigger_lambda_batch_{i//3}',
+            python_callable=trigger_lambda
+        ).expand(
+            op_kwargs={'file_name': current_files}
+        )
 
     # 태스크 의존성 설정
     list_files_task >> trigger_lambda_task
