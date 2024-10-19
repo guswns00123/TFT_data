@@ -8,15 +8,24 @@ from airflow.operators.empty import EmptyOperator
 import os
 import pandas as pd
 from hooks.custom_postgres_hook import CustomPostgresHook
+import psutil
+import logging
+def measure_memory_usage(task_id):
+    process = psutil.Process()
+    mem_info = process.memory_info()
+    logging.info(f'Task ID: {task_id} - Memory Usage: {mem_info.rss / (1024 * 1024):.2f} MB')  # RSS (Resident Set Size)
 
 def insrt_postgres(postgres_conn_id, tbl_nm, file_nm, **kwargs):
+        measure_memory_usage('insrt_postgres')
         custom_postgres_hook = CustomPostgresHook(postgres_conn_id=postgres_conn_id)
         custom_postgres_hook.bulk_load(table_name=tbl_nm, file_name=file_nm, delimiter=',', is_header=True, is_replace=True)
 def process_user_data(postgres_conn_id, query, **kwargs):
+        measure_memory_usage('process_user_data')
         postgres_hook = PostgresHook(postgres_conn_id=postgres_conn_id)
         return pd.read_sql_query(query, con=postgres_hook.get_conn(), chunksize=1000)
 
 def upload_to_s3(user_data_batch, batch_number):
+        measure_memory_usage(f'upload_to_s3_batch_{batch_number}')
         file_path = f'/opt/airflow/files/challenger_user_info_batch_{batch_number}.csv'
         user_data_batch.to_csv(file_path, index=False, header=False)
         hook = S3Hook('aws_default')
@@ -28,6 +37,7 @@ def upload_to_s3(user_data_batch, batch_number):
         print(f"Uploaded batch {batch_number} to S3.")
 
 def save_batches_to_s3(**kwargs):
+        measure_memory_usage('save_batches_to_s3')
         postgres_conn_id = kwargs['postgres_conn_id']
         query = 'SELECT * FROM user_info'
         
