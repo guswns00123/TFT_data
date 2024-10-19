@@ -32,6 +32,7 @@ def trigger_lambda(file_name,**kwargs):
         raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
     
     print(f"Lambda function triggered for file: {file_name} asynchronously.")
+    
     # client = session.client('lambda')
     # response = client.invoke(
     #     FunctionName='TFT_data_S3',

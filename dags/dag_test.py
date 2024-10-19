@@ -51,19 +51,23 @@ def download_file_from_s3(bucket_name, file_name, local_path, **kwargs):
     print(f"File saved locally at {local_file_path}")
     return local_file_path
 
+
+
 with DAG(
         dag_id='dags_game_info_to_LocalDB',
         start_date=pendulum.datetime(2024, 10, 1, tz='Asia/Seoul'),
         schedule='0 */3 * * *',
         catchup=False
 ) as dag:
+
+    
     start = EmptyOperator(
     task_id='start'
     )
-    # def list_files_in_s3(bucket_name, prefix, **kwargs):
-    #     s3_hook = S3Hook('aws_default')
-    #     files = s3_hook.list_keys(bucket_name=bucket_name, prefix=prefix)
-    #     return files
+    def list_files_in_s3(bucket_name, prefix, **kwargs):
+        s3_hook = S3Hook('aws_default')
+        files = s3_hook.list_keys(bucket_name=bucket_name, prefix=prefix)
+        return files
 
     # list_files_task = PythonOperator(
     #     task_id='list_files',
@@ -74,16 +78,20 @@ with DAG(
     #     },
     #     provide_context=True,
     # )
-    @task
-    def list_s3_files(bucket_name, prefix):
-        s3_hook = S3Hook(aws_conn_id='aws_default')  # AWS 연결 설정
-        files = s3_hook.list_keys(bucket_name=bucket_name, prefix=prefix)
-        return files
-    invoke_lambda = AwsLambdaInvokeFunctionOperator.partial(
-        task_id='invoke_lambda',
-        function_name='TFT_data_S3',  # Lambda 함수 이름
-        aws_conn_id='aws_default',
-    ).expand(payload=[
-        {'key': file_key} for file_key in list_s3_files('morzibucket', 'files/challenger_user_info_batch_')]
+    list_files_task = PythonOperator(
+        task_id='list_s3_files',
+        python_callable=list_files_in_s3,
+        op_kwargs={'bucket_name': 'morzibucket', 'prefix': 'files/challenger_user_info_batch_'},  # S3 버킷 이름과 접두사 지정
+        do_xcom_push=True  # 결과를 XCom에 푸시
     )
-    list_s3_files() >> invoke_lambda
+
+    # Lambda 호출 태스크 생성 (Dynamic Task Mapping)
+    trigger_lambda_task = PythonOperator.partial(
+        task_id='trigger_lambda',
+        python_callable=trigger_lambda
+    ).expand(
+        op_kwargs={'file_name': "{{ task_instance.xcom_pull(task_ids='list_s3_files') }}"}  # XCom으로 받은 파일 목록 사용
+    )
+
+    # 태스크 의존성 설정
+    list_files_task >> trigger_lambda_task

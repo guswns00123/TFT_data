@@ -5,7 +5,7 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.operators.email import EmailOperator
 from airflow.operators.empty import EmptyOperator
-import pandas as pd
+
 from hooks.custom_postgres_hook import CustomPostgresHook
 
 with DAG(
@@ -32,6 +32,7 @@ with DAG(
     )
 
     def process_user_data(postgres_conn_id, query, **kwargs):
+        import pandas as pd
         postgres_hook = PostgresHook(postgres_conn_id=postgres_conn_id)
         connection = postgres_hook.get_conn()
         cursor = connection.cursor()
