@@ -7,6 +7,7 @@ from airflow.operators.empty import EmptyOperator
 import pandas as pd
 from airflow.exceptions import AirflowFailException
 from hooks.custom_postgres_hook import CustomPostgresHook
+from airflow.hooks.base_hook import BaseHook
 import boto3
 import json
 from io import StringIO
