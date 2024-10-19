@@ -34,7 +34,7 @@ def trigger_lambda(file_name,**kwargs):
 
 
 with DAG(
-        dag_id='dags_game_info_to_LocalDB',
+        dag_id='dag_test',
         start_date=pendulum.datetime(2024, 10, 1, tz='Asia/Seoul'),
         schedule='0 */3 * * *',
         catchup=False
