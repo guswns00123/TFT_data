@@ -2,14 +2,13 @@ from airflow import DAG
 import pendulum
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.operators.email import EmailOperator
 from airflow.operators.empty import EmptyOperator
-import pandas as pd
-from airflow.decorators import task
 from airflow.exceptions import AirflowFailException
-from hooks.custom_postgres_hook import CustomPostgresHook
-from airflow.providers.amazon.aws.operators.lambda_function import AwsLambdaInvokeFunctionOperator
+
 def trigger_lambda(file_name,**kwargs):
+    import json
+    import pandas as pd
+    import boto3
     # boto3 클라이언트를 이용한 Lambda 호출
     session = boto3.Session(
         aws_access_key_id=BaseHook.get_connection('aws_lambda').login,
@@ -32,25 +31,6 @@ def trigger_lambda(file_name,**kwargs):
         raise AirflowFailException(f"Lambda invocation failed with status code {status_code}")
     
     print(f"Lambda function triggered for file: {file_name} asynchronously.")
-
-def download_file_from_s3(bucket_name, file_name, local_path, **kwargs):
-    s3_hook = S3Hook('aws_default')
-    s3_client = s3_hook.get_conn()
-
-    # Download the file from S3
-    obj = s3_client.get_object(Bucket=bucket_name, Key=file_name)
-    content = obj['Body'].read().decode('utf-8')
-
-    # Convert the file content to a DataFrame (assuming it's a CSV file)
-    df = pd.read_csv(StringIO(content))
-    
-    # Save to local directory
-    local_file_path = f"{local_path}/{file_name.split('/')[-1]}"
-    df.to_csv(local_file_path, index=False)
-
-    print(f"File saved locally at {local_file_path}")
-    return local_file_path
-
 
 
 with DAG(
