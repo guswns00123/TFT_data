@@ -55,7 +55,7 @@ class CustomPostgresHook(BaseHook):
             new_df.to_sql(name=new_tb_name,
                             con=engine,
                             schema='public',
-                            if_exists='append',
+                            if_exists=if_exists,
                             index=False
                         )
             
