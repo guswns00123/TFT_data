@@ -110,8 +110,8 @@ with DAG(
     },
     provide_context=True,
 )
-    list_files_task = PythonOperator(
-        task_id='list_files_task',
+    task1 = PythonOperator(
+        task_id='task1',
         python_callable=lambda: print("List files from S3")
     )
     def insrt_postgres(postgres_conn_id, tbl_nm, file_nm, **kwargs):
@@ -141,14 +141,5 @@ with DAG(
         subject='S3 적재 성공',
         html_content='S3 적재 성공하였습니다.'
     )
-    start >> list_files_task
-    list_files_task >> create_lambda_tasks_op
-
-    # download_file_task와 download_file_task2를 list_files_task 후에 실행
-    list_files_task >> [download_file_task, download_file_task2]
-
-    # 각 download_file_task 완료 후 insrt_postgres1, insrt_postgres2 실행
-    [download_file_task, download_file_task2] >> [insrt_postgres1, insrt_postgres2]
-
-    # insrt_postgres1, insrt_postgres2 완료 후 send_email_task 실행
-    [insrt_postgres1, insrt_postgres2] >> send_email_task
+    list_files_task >> create_lambda_tasks_op >> [download_file_task, download_file_task2] >> task1
+    task1 >> [insrt_postgres1, insrt_postgres2] >> send_email_task
