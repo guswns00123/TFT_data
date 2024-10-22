@@ -116,7 +116,7 @@ with DAG(
     op_kwargs={
         'postgres_conn_id': 'conn-db-postgres-custom',
         'query': 'SELECT * FROM user_info',
-        'batch_size': 200,  # 한 번에 처리할 배치 크기 설정
+        'batch_size': 1000,  # 한 번에 처리할 배치 크기 설정
         'file_prefix': '/opt/airflow/files/{{data_interval_end.in_timezone("Asia/Seoul") | ds_nodash }}/'  # 저장 파일 경로 설정
     },
     provide_context=True
