@@ -8,12 +8,18 @@ from airflow.operators.empty import EmptyOperator
 import csv
 import os
 def process_user_data(postgres_conn_id, query, batch_size=300, file_prefix=None, **kwargs):
+    import time
+    import psutil
+
     conn = PostgresHook(postgres_conn_id=postgres_conn_id).get_conn()
     cursor = conn.cursor()
 
     offset = 0
     batch_number = 1
     directory = os.path.dirname(file_prefix)
+    start_time = time.time()  # 시작 시간 기록
+    process = psutil.Process()  # 현재 프로세스 정보 가져오기
+    initial_memory = process.memory_info().rss / (1024 ** 2)
 
     # 디렉토리 생성
     os.makedirs(directory, exist_ok=True)
@@ -39,9 +45,15 @@ def process_user_data(postgres_conn_id, query, batch_size=300, file_prefix=None,
         # 다음 배치로 넘어감
         offset += batch_size
         batch_number += 1
+    end_time = time.time()  # 종료 시간 기록
+    final_memory = process.memory_info().rss / (1024 ** 2)  # 최종 메모리 사용량 (MB 단위)
 
+    execution_time = end_time - start_time  # 실행 시간 계산
+    memory_usage = final_memory - initial_memory
     cursor.close()
     conn.close()
+    print(f"Batch Processing Execution Time: {execution_time} seconds")
+    print(f"Batch Processing Memory Usage: {memory_usage} MB")
 
 with DAG(
         dag_id='test',
