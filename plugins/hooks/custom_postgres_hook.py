@@ -36,8 +36,8 @@ class CustomPostgresHook(BaseHook):
         file_df = pd.read_csv(file_name, header=0, delimiter=delimiter, index_col = None)
         if table_name == 'user_info':
             file_df.rename(columns={'puuid':'user_id'}, inplace=True)
-            del file_df['ratedTier']
-            del file_df['ratedRating']
+            # del file_df['ratedTier']
+            # del file_df['ratedRating']
             del file_df['leagueId']
             
             
