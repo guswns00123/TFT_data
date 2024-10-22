@@ -27,7 +27,7 @@ def upload_to_s3(user_data_batch, batch_number):
 def save_batches_to_s3(**kwargs):
     measure_memory_usage('save_batches_to_s3')
     user_data = kwargs['ti'].xcom_pull(task_ids='process_user_data')
-    batch_size = 50
+    batch_size = 200
     
     for i in range(0, len(user_data), batch_size):
         user_batch = user_data.iloc[i:i + batch_size]  
@@ -37,6 +37,7 @@ def insrt_postgres(postgres_conn_id, tbl_nm, file_nm, **kwargs):
     measure_memory_usage('insrt_postgres')
     custom_postgres_hook = CustomPostgresHook(postgres_conn_id=postgres_conn_id)
     custom_postgres_hook.bulk_load(table_name=tbl_nm, file_name=file_nm, delimiter=',', is_header=True, is_replace=True)
+
 def process_user_data(postgres_conn_id, query, **kwargs):
     measure_memory_usage('process_user_data')
     import pandas as pd
@@ -63,7 +64,7 @@ with DAG(
         python_callable=insrt_postgres,
         op_kwargs={'postgres_conn_id': 'conn-db-postgres-custom',
                    'tbl_nm':'user_info',
-                   'file_nm':'/opt/airflow/files/challenger_user_data.csv'}
+                   'file_nm':'/opt/airflow/files/1_tier_user.csv'}
     )
 
     process_user = PythonOperator(
@@ -85,7 +86,7 @@ with DAG(
     send_email_task = EmailOperator(
         task_id='send_email_task',
         to='fresh0911@naver.com',
-        subject='S3 적재 성공',
+        subject='유저 정보 S3 적재 성공',
         html_content='S3 적재 성공하였습니다.'
     )
 
