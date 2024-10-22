@@ -7,9 +7,16 @@ from airflow.operators.email import EmailOperator
 from airflow.operators.empty import EmptyOperator
 import csv
 import os
+import psutil
+import logging
+def measure_memory_usage(task_id):
+    process = psutil.Process()
+    mem_info = process.memory_info()
+    logging.info(f'Task ID: {task_id} - Memory Usage: {mem_info.rss / (1024 * 1024):.2f} MB')  # RSS (Resident Set Size)
+
 def process_user_data(postgres_conn_id, query, batch_size=300, file_prefix=None, **kwargs):
     import time
-    import psutil
+    measure_memory_usage('process_user_data')
 
     conn = PostgresHook(postgres_conn_id=postgres_conn_id).get_conn()
     cursor = conn.cursor()
@@ -57,8 +64,7 @@ def process_user_data(postgres_conn_id, query, batch_size=300, file_prefix=None,
 
 def process_user_data2(postgres_conn_id, query, file_prefix=None, **kwargs):
     import time
-    import psutil
-
+    measure_memory_usage('process_user_data2')
     conn = PostgresHook(postgres_conn_id=postgres_conn_id).get_conn()
     cursor = conn.cursor()
     directory = os.path.dirname(file_prefix)
@@ -125,4 +131,4 @@ with DAG(
         },
         provide_context=True
     )
-    start >> process_user
+    start >> process_user >>process_user2
