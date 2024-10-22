@@ -6,13 +6,18 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.operators.email import EmailOperator
 from airflow.operators.empty import EmptyOperator
 import csv
-
+import os
 def process_user_data(postgres_conn_id, query, batch_size=300, file_prefix=None, **kwargs):
     conn = PostgresHook(postgres_conn_id=postgres_conn_id).get_conn()
     cursor = conn.cursor()
 
     offset = 0
     batch_number = 1
+    directory = os.path.dirname(file_prefix)
+
+    # 디렉토리 생성
+    os.makedirs(directory, exist_ok=True)
+
     while True:
         # LIMIT과 OFFSET을 사용해 배치 처리
         batch_query = f"{query} LIMIT {batch_size} OFFSET {offset}"
@@ -22,8 +27,11 @@ def process_user_data(postgres_conn_id, query, batch_size=300, file_prefix=None,
         if not batch_data:
             break  # 더 이상 데이터가 없으면 루프 종료
 
+        # 파일 이름을 배치 번호에 따라 지정
+        file_name = f"batch_user_data_{batch_number}.csv"
+        file_path = os.path.join(directory, file_name)  # 전체 파일 경로 생성
+
         # 배치 데이터를 CSV로 저장
-        file_path = f"{file_prefix}{batch_number}.csv"
         with open(file_path, mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerows(batch_data)  # 데이터 저장
@@ -54,7 +62,7 @@ with DAG(
         'postgres_conn_id': 'conn-db-postgres-custom',
         'query': 'SELECT * FROM user_info',
         'batch_size': 200,  # 한 번에 처리할 배치 크기 설정
-        'file_prefix': '/opt/airflow/files/{{data_interval_end.in_timezone("Asia/Seoul") | ds_nodash }}/batch_user_data_'  # 저장 파일 경로 설정
+        'file_prefix': '/opt/airflow/files/{{data_interval_end.in_timezone("Asia/Seoul") | ds_nodash }}/'  # 저장 파일 경로 설정
     },
     provide_context=True
 )
