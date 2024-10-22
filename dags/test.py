@@ -55,6 +55,43 @@ def process_user_data(postgres_conn_id, query, batch_size=300, file_prefix=None,
     print(f"Batch Processing Execution Time: {execution_time} seconds")
     print(f"Batch Processing Memory Usage: {memory_usage} MB")
 
+def process_user_data2(postgres_conn_id, query, **kwargs):
+    import time
+    import psutil
+
+    conn = PostgresHook(postgres_conn_id=postgres_conn_id).get_conn()
+    cursor = conn.cursor()
+    directory = os.path.dirname(file_prefix)
+    start_time = time.time()  # 시작 시간 기록
+    process = psutil.Process()  # 현재 프로세스 정보 가져오기
+    initial_memory = process.memory_info().rss / (1024 ** 2)
+
+    # 디렉토리 생성
+    os.makedirs(directory, exist_ok=True)
+
+    batch_query = f"{query}"
+    cursor.execute(batch_query)
+    batch_data = cursor.fetchall()
+
+    file_name = f"batch_user_data_1.csv"
+    file_path = os.path.join(directory, file_name) 
+
+    # 배치 데이터를 CSV로 저장
+    with open(file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(batch_data) 
+    end_time = time.time()  # 종료 시간 기록
+    final_memory = process.memory_info().rss / (1024 ** 2)  # 최종 메모리 사용량 (MB 단위)
+
+    execution_time = end_time - start_time  # 실행 시간 계산
+    memory_usage = final_memory - initial_memory
+    cursor.close()
+    conn.close()
+    print(f"Batch Processing Execution Time: {execution_time} seconds")
+    print(f"Batch Processing Memory Usage: {memory_usage} MB")
+
+
+
 with DAG(
         dag_id='test',
         start_date=pendulum.datetime(2024, 10, 1, tz='Asia/Seoul'),
@@ -78,4 +115,13 @@ with DAG(
     },
     provide_context=True
 )
-    start >> process_user
+    process_user2 = PythonOperator(
+        task_id="process_user_data2",
+        python_callable=process_user_data2,
+        op_kwargs={
+            'postgres_conn_id': 'conn-db-postgres-custom',
+            'query': 'SELECT * FROM user_info', 
+        },
+        provide_context=True
+    )
+    start >> process_user2
