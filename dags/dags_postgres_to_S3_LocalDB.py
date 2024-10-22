@@ -64,7 +64,7 @@ with DAG(
         python_callable=insrt_postgres,
         op_kwargs={'postgres_conn_id': 'conn-db-postgres-custom',
                    'tbl_nm':'user_info',
-                   'file_nm':'/opt/airflow/files/1_tier_user.csv'}
+                   'file_nm':'/opt/airflow/files/high_user.csv'}
     )
 
     process_user = PythonOperator(
