@@ -55,7 +55,7 @@ def process_user_data(postgres_conn_id, query, batch_size=300, file_prefix=None,
     print(f"Batch Processing Execution Time: {execution_time} seconds")
     print(f"Batch Processing Memory Usage: {memory_usage} MB")
 
-def process_user_data2(postgres_conn_id, query, **kwargs):
+def process_user_data2(postgres_conn_id, query, file_prefix=None, **kwargs):
     import time
     import psutil
 
@@ -121,6 +121,7 @@ with DAG(
         op_kwargs={
             'postgres_conn_id': 'conn-db-postgres-custom',
             'query': 'SELECT * FROM user_info', 
+            'file_prefix': '/opt/airflow/files/{{data_interval_end.in_timezone("Asia/Seoul") | ds_nodash }}/'
         },
         provide_context=True
     )
