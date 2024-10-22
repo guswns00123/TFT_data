@@ -5,10 +5,12 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.operators.email import EmailOperator
 from airflow.operators.empty import EmptyOperator
+from boto3.s3.transfer import TransferConfig
 import csv
 import os
 import psutil
 import logging
+import boto3
 def measure_memory_usage(task_id):
     process = psutil.Process()
     mem_info = process.memory_info()
@@ -96,7 +98,50 @@ def process_user_data2(postgres_conn_id, query, file_prefix=None, **kwargs):
     print(f"Batch Processing Execution Time: {execution_time} seconds")
     print(f"Batch Processing Memory Usage: {memory_usage} MB")
 
+def multipart_upload_to_s3(file_path, bucket_name, object_name):
+    # S3 클라이언트 생성
+    s3_hook = S3Hook('aws_default')
+    s3_client = s3_hook.get_client_type('s3')
 
+    # Multipart Upload 시작
+    response = s3_client.create_multipart_upload(Bucket=bucket_name, Key=object_name)
+    upload_id = response['UploadId']
+
+    parts = []
+    try:
+        # 파일을 조각으로 나누어 업로드
+        with open(file_path, 'rb') as file:
+            part_number = 1
+            while True:
+                # 5MB 조각 크기 설정
+                data = file.read(5 * 1024 * 1024)  # 5MB
+                if not data:
+                    break
+                
+                # Multipart Upload
+                response = s3_client.upload_part(
+                    Bucket=bucket_name,
+                    Key=object_name,
+                    PartNumber=part_number,
+                    UploadId=upload_id,
+                    Body=data
+                )
+                parts.append({'ETag': response['ETag'], 'PartNumber': part_number})
+                part_number += 1
+
+        # Multipart Upload 완료
+        s3_client.complete_multipart_upload(
+            Bucket=bucket_name,
+            Key=object_name,
+            UploadId=upload_id,
+            MultipartUpload={'Parts': parts}
+        )
+        print(f"Multipart upload of {object_name} completed successfully.")
+
+    except Exception as e:
+        # 오류 발생 시 업로드 중단
+        s3_client.abort_multipart_upload(Bucket=bucket_name, Key=object_name, UploadId=upload_id)
+        print(f"Multipart upload failed: {e}")
 
 with DAG(
         dag_id='test',
@@ -131,4 +176,13 @@ with DAG(
         },
         provide_context=True
     )
-    start >> process_user >>process_user2
+    upload_to_s3_task = PythonOperator(
+    task_id='upload_user_data_to_s3',
+    python_callable=multipart_upload_to_s3,
+    op_kwargs={
+        'file_path': '/opt/airflow/files/{{ data_interval_end.in_timezone("Asia/Seoul") | ds_nodash }}/batch_user_data_1.csv',
+        'bucket_name': 'morzibucket',
+        'object_name': 'files/challenger_user_info_batch_1.csv'
+    },
+    )
+    start >> process_user >>process_user2 >> upload_to_s3_task
