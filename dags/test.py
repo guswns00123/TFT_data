@@ -58,3 +58,4 @@ with DAG(
     },
     provide_context=True
 )
+    start >> process_user
