@@ -26,36 +26,29 @@ class TFTApiToCsvOperator(BaseOperator):
 
         # entries 칼럼이 이미 딕셔너리 형태라면
         self.base_url = f'https://kr.api.riotgames.com/tft/'
-        self.log.info(f'시작:{self.a}')
-        tier_list = ["challenger"]
+        tier_list = ["challenger","grandmaster","master"]
         user_data = None
         for i in tier_list:
             users = self.extract_sky(i,self.base_url)
             if user_data is None:
                 user_data = pd.DataFrame(users)
-                self.log.info(f'중간:{user_data}')
             else:
                 user_data2 = pd.DataFrame(users)
                 user_data = pd.concat([user_data, user_data2])
 
         user_data['summonerId'] = user_data['entries'].apply(extract_summoner_id)
         if not os.path.exists(self.path):
-            self.log.info(f'여기3')
             os.system(f'mkdir -p {self.path}')
-            self.log.info(f'여기4')
         user_data.to_csv(self.path + '/' + self.file_name, encoding='utf-8', index=False)
 
-        #2
-        #id를 이용하여 puuid 가져와 high_df에 적재
+
         
         
 
     def extract_sky(self, tier, base_url):
 
-        if tier not in ["challenger", "grandmaster"]:
-
+        if tier not in ["challenger", "grandmaster","master"]:
             print('해당 함수에서는 master, grandmaster, challenger만 기술할 수 있습니다.')
-
             return None
         request_header  = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",

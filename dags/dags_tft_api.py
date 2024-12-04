@@ -7,25 +7,26 @@ from airflow.operators.python import PythonOperator
 
 with DAG(
     dag_id='dags_tft_api',
-    schedule='0 7 * * *',
-    start_date=pendulum.datetime(2023,4,1, tz='Asia/Seoul'),
+    schedule = '0 1 * * 1', #매주 월요일 새벽 1시
+    start_date=pendulum.datetime(2024,4,1, tz='Asia/Seoul'),
     catchup=False
 ) as dag:
+    
     '''천상계 선수 데이터'''
     var_value = Variable.get("apikey_tft")
-    test = TFTApiToCsvOperator(
-        task_id='test',
+    get_high_user_list = TFTApiToCsvOperator(
+        task_id='get_high_user_list',
         a = var_value,
         path='/opt/airflow/files/{{data_interval_end.in_timezone("Asia/Seoul") | ds_nodash }}',
         file_name='sky_user_list.csv'
     )
 
-    test2 = TFTApiToCsvOperator2(
-        task_id='test2',
+    get_high_user_puuid = TFTApiToCsvOperator2(
+        task_id='get_high_user_puuid',
         a = var_value,
         path='/opt/airflow/files/{{data_interval_end.in_timezone("Asia/Seoul") | ds_nodash }}',
-        file_name='sky_user_list.csv'
+        file_name='sky_user_list_with_puuid.csv'
     )
     
 
-    test >> test2
+    get_high_user_list >> get_high_user_puuid 

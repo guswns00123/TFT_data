@@ -19,19 +19,15 @@ class TFTApiToCsvOperator2(BaseOperator):
 
         self.base_url = f'https://kr.api.riotgames.com/tft/'
         self.log.info(f'시작:{self.a}')
-        tier_list = ["challenger"]
         final_file = 'sky_puuid.csv'
         user_data = pd.read_csv( self.path+'/' + self.file_name)
-        self.log.info(f'시작2:{self.a}')
         high_df = None
         for index, row in user_data.iterrows():
             id = row['summonerId']
             if high_df is None:
                 high_df = pd.DataFrame(self.extract_game_by_summoner(id,self.base_url))
-                self.log.info(f'시작3:{id}')
             else:
                 high_df2 = pd.DataFrame(self.extract_game_by_summoner(id,self.base_url))
-                self.log.info(f'시작4:{id}')
                 high_df = pd.concat([high_df, high_df2])
 
         if not os.path.exists(self.path):
@@ -39,9 +35,7 @@ class TFTApiToCsvOperator2(BaseOperator):
 
         high_df.to_csv(self.path + '/' + final_file, encoding='utf-8', index=False)
 
-        #2
-        #id를 이용하여 puuid 가져와 high_df에 적재
-        
+
         
     def extract_game_by_summoner(self, idname, base_url):
         request_header  = {

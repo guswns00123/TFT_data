@@ -76,7 +76,7 @@ def trigger_lambda(file_name,**kwargs):
 with DAG(
     dag_id='dag_lambda_trigger',
     start_date=pendulum.datetime(2024,10,1, tz='Asia/Seoul'), 
-    schedule='0 * * * *',  # 매일 6시간마다 실행
+    schedule = '0 1 * * *',  # 매일 새벽 1시에 실행
     catchup=False
 ) as dag:
     def list_files_in_s3(bucket_name, prefix, **kwargs):
