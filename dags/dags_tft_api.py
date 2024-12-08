@@ -25,7 +25,7 @@ with DAG(
         task_id='get_high_user_puuid',
         a = var_value,
         path='/opt/airflow/files/{{data_interval_end.in_timezone("Asia/Seoul") | ds_nodash }}',
-        file_name='sky_user_list_with_puuid.csv'
+        file_name='sky_user_list.csv'
     )
     
 

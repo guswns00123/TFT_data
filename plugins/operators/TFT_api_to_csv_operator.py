@@ -26,7 +26,7 @@ class TFTApiToCsvOperator(BaseOperator):
 
         # entries 칼럼이 이미 딕셔너리 형태라면
         self.base_url = f'https://kr.api.riotgames.com/tft/'
-        tier_list = ["challenger","grandmaster","master"]
+        tier_list = ["challenger"]
         user_data = None
         for i in tier_list:
             users = self.extract_sky(i,self.base_url)
@@ -47,7 +47,7 @@ class TFTApiToCsvOperator(BaseOperator):
 
     def extract_sky(self, tier, base_url):
 
-        if tier not in ["challenger", "grandmaster","master"]:
+        if tier not in ["challenger"]:
             print('해당 함수에서는 master, grandmaster, challenger만 기술할 수 있습니다.')
             return None
         request_header  = {

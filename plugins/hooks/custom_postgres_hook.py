@@ -2,7 +2,7 @@ from airflow.hooks.base import BaseHook
 import psycopg2
 import pandas as pd
 import json
-import re
+
 class CustomPostgresHook(BaseHook):
 
     def __init__(self, postgres_conn_id, **kwargs):
@@ -15,7 +15,6 @@ class CustomPostgresHook(BaseHook):
         self.password = airflow_conn.password
         self.dbname = airflow_conn.schema
         self.port = airflow_conn.port
-
         self.postgres_conn = psycopg2.connect(host=self.host, user=self.user, password=self.password, dbname=self.dbname, port=self.port)
         return self.postgres_conn
 
@@ -26,8 +25,6 @@ class CustomPostgresHook(BaseHook):
         from sqlalchemy import create_engine, event
         from sqlalchemy.engine import Engine
         import re
-
-        
         self.log.info('적재 대상파일:' + file_name)
         self.log.info('테이블 :' + table_name)
         self.get_conn()
@@ -36,12 +33,9 @@ class CustomPostgresHook(BaseHook):
         file_df = pd.read_csv(file_name, header=0, delimiter=delimiter, index_col = None)
         if table_name == 'user_info':
             file_df.rename(columns={'puuid':'user_id'}, inplace=True)
-            # del file_df['ratedTier']
-            # del file_df['ratedRating']
+            file_df = file_df[file_df["queueType"] == "RANKED_TFT"]
             del file_df['leagueId']
             
-            
-
 
         if table_name == 'game_info':
             new_tb_name = 'user_game'
