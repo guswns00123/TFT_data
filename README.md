@@ -40,29 +40,29 @@ docker-compose up
 
 1) TFT 유저 데이터 적재 과정
 
-주기: 매일 새벽 1시
-
-설명:
-
-Airflow DAG에서 API를 호출해 유저 데이터를 수집.
-
-PostgreSQL DB에 적재하여 저장.
-
-AWS S3에는 배치 처리 방식으로 여러 파일로 나누어 저장.
-
+    주기: 매일 새벽 1시
+    
+    설명:
+    
+    Airflow DAG에서 API를 호출해 유저 데이터를 수집.
+    
+    PostgreSQL DB에 적재하여 저장.
+    
+    AWS S3에는 배치 처리 방식으로 여러 파일로 나누어 저장.
+    
 ![image](https://github.com/user-attachments/assets/f2790b7a-4484-42b1-8060-a1d0f008def5)
 
 
 2) TFT 경기 결과 데이터 적재 과정
    
-주기: 매 2시간 마다
-
-설명:
-
-Airflow DAG에서 Lambda를 병렬로 호출하여 유저별 경기 결과를 수집.
-
-수집된 데이터는 PostgreSQL DB,S3로 저장.
-
+    주기: 매 2시간 마다
+  
+    설명:
+  
+    Airflow DAG에서 Lambda를 병렬로 호출하여 유저별 경기 결과를 수집.
+    
+    수집된 데이터는 PostgreSQL DB,S3로 저장.
+  
 ![image (1)](https://github.com/user-attachments/assets/09223e4b-91b6-4901-bd05-b59821056e2c)
 
 ## 주간 챌린저 유저 경기 결과 대쉬 보드
