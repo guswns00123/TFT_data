@@ -38,7 +38,7 @@ docker-compose up
 
 ## 파이프 라인 설명
 
-1. TFT 유저 데이터 적재 과정
+1) TFT 유저 데이터 적재 과정
 
 주기: 매일 새벽 1시
 
@@ -53,7 +53,7 @@ AWS S3에는 배치 처리 방식으로 여러 파일로 나누어 저장.
 ![image](https://github.com/user-attachments/assets/f2790b7a-4484-42b1-8060-a1d0f008def5)
 
 
-2. TFT 경기 결과 데이터 적재 과정
+2) TFT 경기 결과 데이터 적재 과정
    
 주기: 매 2시간 마다
 
