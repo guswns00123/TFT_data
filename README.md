@@ -34,7 +34,8 @@ docker-compose up
 ```
 
 ## TFT 분석 데이터 ER 구조
-![image (3)](https://github.com/user-attachments/assets/24a8160c-7604-49f8-abfa-37f95d9c94d9)
+![제목 없는 다이어그램 (1)](https://github.com/user-attachments/assets/ae7638e3-8344-4843-bea3-29168c3a0279)
+
 
 ## 파이프 라인 설명
 
