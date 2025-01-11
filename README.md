@@ -40,6 +40,8 @@ docker-compose up
 
 1) TFT 유저 데이터 적재 과정
 
+    DAG ID : dags_postgres_to_S3_LocalDB
+   
     주기: 매일 새벽 1시
     
     설명:
@@ -55,6 +57,8 @@ docker-compose up
 
 2) TFT 경기 결과 데이터 적재 과정
    
+    DAG ID: dags_game_info_to_LocalDB
+    
     주기: 매 2시간 마다
   
     설명:
